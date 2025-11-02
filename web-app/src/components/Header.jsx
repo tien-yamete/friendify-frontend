@@ -120,9 +120,16 @@ export default function Header({
           borderRadius: 3,
           minWidth: 300,
           border: `1px solid ${t.palette.divider}`,
-          boxShadow: "0 8px 28px rgba(0,0,0,0.12)",
+          boxShadow: t.palette.mode === "dark"
+            ? "0 12px 48px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(0, 0, 0, 0.5)"
+            : "0 12px 48px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.08)",
           overflow: "visible",
           p: 1.5,
+          bgcolor: "background.paper",
+          backdropFilter: "blur(20px)",
+          backgroundImage: t.palette.mode === "dark"
+            ? "linear-gradient(135deg, rgba(28, 30, 36, 0.98) 0%, rgba(28, 30, 36, 1) 100%)"
+            : "linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 1) 100%)",
           "&:before": {
             content: '""', position: "absolute", top: 0, right: 18,
             width: 12, height: 12, bgcolor: "background.paper",
@@ -299,6 +306,14 @@ export default function Header({
                 overflow: "hidden",
                 maxHeight: 400,
                 overflowY: "auto",
+                bgcolor: "background.paper",
+                backdropFilter: "blur(20px)",
+                boxShadow: t.palette.mode === "dark"
+                  ? "0 12px 48px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(0, 0, 0, 0.5)"
+                  : "0 12px 48px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.08)",
+                backgroundImage: t.palette.mode === "dark"
+                  ? "linear-gradient(180deg, rgba(28, 30, 36, 0.98) 0%, rgba(28, 30, 36, 1) 100%)"
+                  : "linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 1) 100%)",
               })}
             >
               <List sx={{ py: 1 }}>

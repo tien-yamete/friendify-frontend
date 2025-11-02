@@ -17,7 +17,6 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(false);
   const observer = useRef();
   const lastPostElementRef = useRef();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -66,7 +65,6 @@ export default function Home() {
       .then((res) => {
         setTotalPages(res.totalPages);
         setPosts((prev) => [...prev, ...res.data]);
-        setHasMore(res.data.length > 0);
       })
       .catch(() => {
         logOut();
@@ -76,14 +74,23 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (!hasMore) return;
+    if (loading) return;
     if (observer.current) observer.current.disconnect();
+
     observer.current = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && page < totalPages) setPage((prev) => prev + 1);
+      if (entries[0].isIntersecting && !loading && page < totalPages) {
+        setPage((prev) => prev + 1);
+      }
     });
-    if (lastPostElementRef.current) observer.current.observe(lastPostElementRef.current);
-    setHasMore(false);
-  }, [hasMore, page, totalPages]);
+
+    if (lastPostElementRef.current) {
+      observer.current.observe(lastPostElementRef.current);
+    }
+
+    return () => {
+      if (observer.current) observer.current.disconnect();
+    };
+  }, [posts, loading, page, totalPages]);
 
   const handlePostContent = () => {
     if (!newPostContent.trim()) return;
@@ -112,8 +119,11 @@ export default function Home() {
           display: "flex",
           justifyContent: "center",
           width: "100%",
+          maxWidth: 1440,
+          mx: "auto",
           gap: 3,
           px: { xs: 0, md: 2 },
+          alignItems: "flex-start",
         }}
       >
         <Box
@@ -121,6 +131,7 @@ export default function Home() {
             width: "100%",
             maxWidth: 680,
             flex: "1 1 auto",
+            minWidth: 0,
           }}
         >
           <CreatePostComposer onClick={handleCreatePostClick} />
@@ -143,29 +154,59 @@ export default function Home() {
               <CircularProgress size="32px" color="primary" />
             </Box>
           )}
+
+          {!loading && posts.length > 0 && page >= totalPages && (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+              <Typography sx={{ fontSize: 14, color: "text.secondary", fontWeight: 500 }}>
+                You've reached the end of your feed
+              </Typography>
+            </Box>
+          )}
         </Box>
 
-        <RightSidebar />
+        <Box
+          sx={{
+            display: { xs: "none", lg: "block" },
+            width: 320,
+            flexShrink: 0,
+          }}
+        >
+          <RightSidebar />
+        </Box>
       </Box>
 
       <Fab
         color="primary"
         aria-label="add"
         onClick={handleCreatePostClick}
-        sx={{
+        sx={(t) => ({
           position: "fixed",
           bottom: 32,
           right: 32,
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
+          width: 64,
+          height: 64,
+          background: t.palette.mode === "dark"
+            ? "linear-gradient(135deg, #8b9aff 0%, #9775d4 100%)"
+            : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          boxShadow: t.palette.mode === "dark"
+            ? "0 8px 32px rgba(139, 154, 255, 0.4), 0 4px 16px rgba(0, 0, 0, 0.5)"
+            : "0 8px 32px rgba(102, 126, 234, 0.4), 0 4px 16px rgba(0, 0, 0, 0.2)",
           "&:hover": {
-            background: "linear-gradient(135deg, #5568d3 0%, #63428a 100%)",
-            transform: "scale(1.12) rotate(90deg)",
+            background: t.palette.mode === "dark"
+              ? "linear-gradient(135deg, #7a89e6 0%, #8664bb 100%)"
+              : "linear-gradient(135deg, #5568d3 0%, #63428a 100%)",
+            transform: "scale(1.15) rotate(90deg)",
+            boxShadow: t.palette.mode === "dark"
+              ? "0 12px 48px rgba(139, 154, 255, 0.5), 0 6px 24px rgba(0, 0, 0, 0.6)"
+              : "0 12px 48px rgba(102, 126, 234, 0.5), 0 6px 24px rgba(0, 0, 0, 0.3)",
           },
-          transition: "all 0.3s ease",
-        }}
+          "&:active": {
+            transform: "scale(1.05) rotate(90deg)",
+          },
+          transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+        })}
       >
-        <AddIcon />
+        <AddIcon sx={{ fontSize: 28 }} />
       </Fab>
 
       <Popover
@@ -184,10 +225,16 @@ export default function Home() {
               maxWidth: "90vw",
               maxHeight: "85vh",
               overflow: "auto",
-              boxShadow: t.shadows[6],
+              boxShadow: t.palette.mode === "dark"
+                ? "0 20px 80px rgba(0, 0, 0, 0.7), 0 8px 32px rgba(0, 0, 0, 0.6)"
+                : "0 20px 80px rgba(0, 0, 0, 0.2), 0 8px 32px rgba(0, 0, 0, 0.12)",
               border: "1px solid",
               borderColor: "divider",
               bgcolor: "background.paper",
+              backdropFilter: "blur(20px)",
+              backgroundImage: t.palette.mode === "dark"
+                ? "linear-gradient(135deg, rgba(28, 30, 36, 0.98) 0%, rgba(28, 30, 36, 1) 100%)"
+                : "linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 1) 100%)",
             }),
           },
         }}
@@ -239,17 +286,35 @@ export default function Home() {
             variant="contained"
             onClick={handlePostContent}
             disabled={!newPostContent.trim()}
-            sx={{
+            sx={(t) => ({
               textTransform: "none",
               fontWeight: 600,
               borderRadius: 3,
               px: 3.5,
               py: 1,
               fontSize: 14,
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              "&:hover": { background: "linear-gradient(135deg, #5568d3 0%, #63428a 100%)" },
-              "&:disabled": { background: "action.disabledBackground", color: "text.disabled" },
-            }}
+              background: t.palette.mode === "dark"
+                ? "linear-gradient(135deg, #8b9aff 0%, #9775d4 100%)"
+                : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              boxShadow: t.palette.mode === "dark"
+                ? "0 4px 12px rgba(139, 154, 255, 0.3)"
+                : "0 4px 12px rgba(102, 126, 234, 0.3)",
+              "&:hover": {
+                background: t.palette.mode === "dark"
+                  ? "linear-gradient(135deg, #7a89e6 0%, #8664bb 100%)"
+                  : "linear-gradient(135deg, #5568d3 0%, #63428a 100%)",
+                boxShadow: t.palette.mode === "dark"
+                  ? "0 6px 16px rgba(139, 154, 255, 0.4)"
+                  : "0 6px 16px rgba(102, 126, 234, 0.4)",
+                transform: "translateY(-2px)",
+              },
+              "&:disabled": {
+                background: "action.disabledBackground",
+                color: "text.disabled",
+                boxShadow: "none",
+              },
+              transition: "all 0.3s ease",
+            })}
           >
             Post
           </Button>

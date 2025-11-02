@@ -33,10 +33,21 @@ export default function CreatePostComposer({ onClick }) {
         border: "1px solid",
         borderColor: "divider",
         p: 2.5,
-        transition: "all 0.25s ease",
+        position: "relative",
+        overflow: "hidden",
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        backgroundImage: t.palette.mode === "dark"
+          ? "linear-gradient(135deg, rgba(139, 154, 255, 0.03) 0%, rgba(151, 117, 212, 0.03) 100%)"
+          : "linear-gradient(135deg, rgba(102, 126, 234, 0.02) 0%, rgba(118, 75, 162, 0.02) 100%)",
+        boxShadow: t.palette.mode === "dark"
+          ? "0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)"
+          : "0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8)",
         "&:hover": {
-          boxShadow: t.shadows[2],
-          borderColor: alpha(t.palette.primary.main, 0.25),
+          boxShadow: t.palette.mode === "dark"
+            ? "0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08)"
+            : "0 8px 24px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1)",
+          borderColor: alpha(t.palette.primary.main, 0.35),
+          transform: "translateY(-2px)",
         },
       })}
     >
@@ -46,12 +57,23 @@ export default function CreatePostComposer({ onClick }) {
           sx={(t) => ({
             width: 48,
             height: 48,
-            border: "2px solid",
-            borderColor: "divider",
-            background: `linear-gradient(135deg, ${t.palette.primary.main} 0%, ${alpha(
-              t.palette.primary.main,
-              0.6
-            )} 100%)`,
+            border: "3px solid",
+            borderColor: t.palette.mode === "dark"
+              ? alpha(t.palette.primary.main, 0.3)
+              : alpha(t.palette.primary.main, 0.2),
+            background: t.palette.mode === "dark"
+              ? "linear-gradient(135deg, #8b9aff 0%, #9775d4 100%)"
+              : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            boxShadow: t.palette.mode === "dark"
+              ? "0 4px 12px rgba(139, 154, 255, 0.3), inset 0 -2px 4px rgba(0, 0, 0, 0.2)"
+              : "0 4px 12px rgba(102, 126, 234, 0.25), inset 0 -2px 4px rgba(0, 0, 0, 0.1)",
+            transition: "all 0.3s ease",
+            "&:hover": {
+              transform: "scale(1.05)",
+              boxShadow: t.palette.mode === "dark"
+                ? "0 6px 16px rgba(139, 154, 255, 0.4)"
+                : "0 6px 16px rgba(102, 126, 234, 0.35)",
+            },
           })}
         >
           {user?.username?.charAt(0)?.toUpperCase() || "U"}

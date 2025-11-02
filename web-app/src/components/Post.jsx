@@ -23,6 +23,7 @@ import {
   Send,
 } from "@mui/icons-material";
 import { alpha } from "@mui/material/styles";
+import MediaCarousel from "./MediaCarousel";
 
 const REACTIONS = [
   { emoji: "👍", label: "Like", color: "#3b82f6" },
@@ -34,7 +35,7 @@ const REACTIONS = [
 ];
 
 const Post = forwardRef((props, ref) => {
-  const { avatar, username, created, content, id } = props.post;
+  const { avatar, username, created, content, id, media } = props.post;
   const { onEdit, onDelete } = props;
 
   const [anchorEl, setAnchorEl] = useState(null);
@@ -130,23 +131,42 @@ const Post = forwardRef((props, ref) => {
         border: "1px solid",
         borderColor: "divider",
         overflow: "hidden",
-        transition: "all .25s ease",
+        position: "relative",
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        backgroundImage: t.palette.mode === "dark"
+          ? "linear-gradient(135deg, rgba(28, 30, 36, 1) 0%, rgba(28, 30, 36, 0.98) 100%)"
+          : "linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.98) 100%)",
+        boxShadow: t.palette.mode === "dark"
+          ? "0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.03)"
+          : "0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8)",
         "&:hover": {
-          boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
-          borderColor: alpha(t.palette.primary.main, 0.25),
-          transform: "translateY(-2px)",
+          boxShadow: t.palette.mode === "dark"
+            ? "0 12px 48px rgba(0, 0, 0, 0.5), 0 4px 16px rgba(139, 154, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05)"
+            : "0 12px 48px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(102, 126, 234, 0.15), inset 0 1px 0 rgba(255, 255, 255, 1)",
+          borderColor: alpha(t.palette.primary.main, 0.35),
+          transform: "translateY(-4px)",
         },
       })}
     >
-      {/* Header – nhẹ nhàng theo theme */}
       <Box
         sx={(t) => ({
           p: 2.5,
           pb: 2,
-          background: `linear-gradient(135deg, ${alpha(
-            t.palette.primary.main,
-            0.08
-          )} 0%, ${alpha(t.palette.primary.main, 0.04)} 100%)`,
+          position: "relative",
+          background: t.palette.mode === "dark"
+            ? `linear-gradient(135deg, ${alpha(t.palette.primary.main, 0.08)} 0%, ${alpha(t.palette.primary.main, 0.04)} 100%)`
+            : `linear-gradient(135deg, ${alpha(t.palette.primary.main, 0.06)} 0%, ${alpha(t.palette.primary.main, 0.02)} 100%)`,
+          "&::after": {
+            content: '""',
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: "1px",
+            background: t.palette.mode === "dark"
+              ? `linear-gradient(90deg, transparent, ${alpha(t.palette.primary.main, 0.2)}, transparent)`
+              : `linear-gradient(90deg, transparent, ${alpha(t.palette.primary.main, 0.15)}, transparent)`,
+          },
         })}
       >
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -157,16 +177,18 @@ const Post = forwardRef((props, ref) => {
                 sx={(t) => ({
                   width: 52,
                   height: 52,
-                  background: `linear-gradient(135deg, ${t.palette.primary.main} 0%, ${alpha(
-                    t.palette.primary.main,
-                    0.6
-                  )} 100%)`,
+                  background: t.palette.mode === "dark"
+                    ? "linear-gradient(135deg, #8b9aff 0%, #9775d4 100%)"
+                    : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                   color: "#fff",
                   fontWeight: 700,
                   fontSize: 20,
                   border: "3px solid",
                   borderColor: "background.paper",
-                  boxShadow: `0 4px 12px ${alpha(t.palette.primary.main, 0.25)}`,
+                  boxShadow: t.palette.mode === "dark"
+                    ? `0 6px 16px ${alpha(t.palette.primary.main, 0.35)}, inset 0 -2px 4px rgba(0, 0, 0, 0.3)`
+                    : `0 6px 16px ${alpha(t.palette.primary.main, 0.3)}, inset 0 -2px 4px rgba(0, 0, 0, 0.15)`,
+                  transition: "all 0.3s ease",
                 })}
               >
                 {username?.charAt(0)}
@@ -266,10 +288,22 @@ const Post = forwardRef((props, ref) => {
                   textTransform: "none",
                   fontWeight: 600,
                   px: 2.5,
-                  background: `linear-gradient(135deg, ${t.palette.primary.main} 0%, ${alpha(
-                    t.palette.primary.main,
-                    0.75
-                  )} 100%)`,
+                  background: t.palette.mode === "dark"
+                    ? "linear-gradient(135deg, #8b9aff 0%, #9775d4 100%)"
+                    : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  boxShadow: t.palette.mode === "dark"
+                    ? "0 4px 12px rgba(139, 154, 255, 0.3)"
+                    : "0 4px 12px rgba(102, 126, 234, 0.3)",
+                  "&:hover": {
+                    background: t.palette.mode === "dark"
+                      ? "linear-gradient(135deg, #7a89e6 0%, #8664bb 100%)"
+                      : "linear-gradient(135deg, #5568d3 0%, #63428a 100%)",
+                    boxShadow: t.palette.mode === "dark"
+                      ? "0 6px 16px rgba(139, 154, 255, 0.4)"
+                      : "0 6px 16px rgba(102, 126, 234, 0.4)",
+                    transform: "translateY(-2px)",
+                  },
+                  transition: "all 0.3s ease",
                 })}
               >
                 Save Changes
@@ -289,6 +323,9 @@ const Post = forwardRef((props, ref) => {
           </Typography>
         )}
       </Box>
+
+      {/* Media Carousel */}
+      {media && media.length > 0 && <MediaCarousel media={media} />}
 
       {/* Stats */}
       {(likeCount > 0 || comments.length > 0) && (
@@ -410,10 +447,16 @@ const Post = forwardRef((props, ref) => {
                 borderRadius: 6,
                 display: "flex",
                 gap: 1,
-                boxShadow: "0 12px 40px rgba(0,0,0,0.18)",
+                boxShadow: t.palette.mode === "dark"
+                  ? "0 16px 64px rgba(0, 0, 0, 0.7), 0 8px 32px rgba(139, 154, 255, 0.2)"
+                  : "0 16px 64px rgba(0, 0, 0, 0.2), 0 8px 32px rgba(102, 126, 234, 0.15)",
                 bgcolor: "background.paper",
                 border: "1px solid",
                 borderColor: "divider",
+                backdropFilter: "blur(20px)",
+                backgroundImage: t.palette.mode === "dark"
+                  ? "linear-gradient(135deg, rgba(28, 30, 36, 0.95) 0%, rgba(28, 30, 36, 1) 100%)"
+                  : "linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 1) 100%)",
               }),
               onMouseLeave: handleCloseReactions,
             }}

@@ -36,8 +36,9 @@ function Scene({ children }) {
         flexDirection: "column",
         bgcolor: "background.default",
         color: "text.primary",
-        height: "100vh", // đảm bảo full viewport
-        overflow: "hidden", // ngăn scroll ngoài
+        height: "100vh",
+        overflow: "hidden",
+        position: "relative",
       }}
     >
       <AppBar
@@ -50,10 +51,13 @@ function Scene({ children }) {
             theme.palette.mode === "dark"
               ? alpha(theme.palette.grey[900], 0.85)
               : alpha(theme.palette.background.paper, 0.9),
-          backdropFilter: "saturate(180%) blur(10px)",
+          backdropFilter: "saturate(180%) blur(20px)",
           borderBottom: "1px solid",
           borderColor: "divider",
           color: "inherit",
+          boxShadow: theme.palette.mode === "dark"
+            ? "0 4px 24px rgba(0, 0, 0, 0.4)"
+            : "0 4px 24px rgba(0, 0, 0, 0.08)",
         }}
       >
         <Toolbar sx={{ minHeight: 64 }}>
@@ -62,7 +66,15 @@ function Scene({ children }) {
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: "none" }, "&:hover": { bgcolor: "action.hover" } }}
+            sx={{
+              mr: 2,
+              display: { sm: "none" },
+              "&:hover": {
+                bgcolor: "action.hover",
+                transform: "scale(1.05)",
+              },
+              transition: "all 0.2s ease",
+            }}
           >
             <MenuIcon />
           </IconButton>
@@ -87,6 +99,9 @@ function Scene({ children }) {
                 bgcolor: "background.paper",
                 borderRight: "1px solid",
                 borderColor: "divider",
+                boxShadow: theme.palette.mode === "dark"
+                  ? "4px 0 24px rgba(0, 0, 0, 0.5)"
+                  : "4px 0 24px rgba(0, 0, 0, 0.1)",
               },
             }}
           >
@@ -103,6 +118,12 @@ function Scene({ children }) {
                 bgcolor: "background.paper",
                 borderRight: "1px solid",
                 borderColor: "divider",
+                backgroundImage: theme.palette.mode === "dark"
+                  ? "linear-gradient(180deg, rgba(28, 30, 36, 0.95) 0%, rgba(28, 30, 36, 1) 100%)"
+                  : "linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 1) 100%)",
+                boxShadow: theme.palette.mode === "dark"
+                  ? "4px 0 24px rgba(0, 0, 0, 0.3)"
+                  : "4px 0 24px rgba(0, 0, 0, 0.05)",
               },
             }}
             open
@@ -111,7 +132,6 @@ function Scene({ children }) {
           </Drawer>
         </Box>
 
-        {/* MAIN */}
         <Box
           component="main"
           sx={{
@@ -119,23 +139,24 @@ function Scene({ children }) {
             display: "flex",
             flexDirection: "column",
             width: { sm: `calc(100% - ${drawerWidth}px)` },
-            minHeight: 0, // critical: allow children with overflow to shrink
+            minHeight: 0,
+            position: "relative",
           }}
         >
-          {/* Spacer cho AppBar */}
           <Toolbar />
 
-          {/* Wrapper chính chứa page content */}
           <Box
             sx={{
               display: "flex",
               justifyContent: "center",
               width: "100%",
-              flex: "1 1 auto",   // fill remaining vertical space
+              flex: "1 1 auto",
               minHeight: 0,
               px: { xs: 1.5, md: 3 },
               py: { xs: 2, md: 3 },
-              overflow: "hidden", // important: page content should control its own scrolling
+              overflowY: "auto",
+              overflowX: "hidden",
+              position: "relative",
             }}
           >
             {children}

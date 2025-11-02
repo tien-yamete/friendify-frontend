@@ -61,29 +61,79 @@ function SideMenu() {
               <ListItemButton
                 component={Link}
                 to={item.to}
-                onClick={() => setActiveItem(item.key)} // giữ để UX mượt ngay khi click
-                selected={isActive} // MUI selected support
-                sx={{
+                onClick={() => setActiveItem(item.key)}
+                selected={isActive}
+                sx={(t) => ({
                   borderRadius: 3,
                   py: 2,
-                  transition: "all 0.25s ease",
+                  px: 2,
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  position: "relative",
+                  overflow: "hidden",
                   background: isActive
-                    ? "linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)"
+                    ? t.palette.mode === "dark"
+                      ? "linear-gradient(135deg, rgba(139, 154, 255, 0.12) 0%, rgba(151, 117, 212, 0.12) 100%)"
+                      : "linear-gradient(135deg, rgba(102, 126, 234, 0.12) 0%, rgba(118, 75, 162, 0.12) 100%)"
                     : "transparent",
+                  boxShadow: isActive
+                    ? t.palette.mode === "dark"
+                      ? "0 4px 12px rgba(139, 154, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+                      : "0 4px 12px rgba(102, 126, 234, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8)"
+                    : "none",
+                  border: isActive
+                    ? `1px solid ${t.palette.mode === "dark" ? "rgba(139, 154, 255, 0.2)" : "rgba(102, 126, 234, 0.2)"}`
+                    : "1px solid transparent",
+                  "&::before": isActive
+                    ? {
+                        content: '""',
+                        position: "absolute",
+                        left: 0,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        width: 4,
+                        height: "60%",
+                        borderRadius: "0 4px 4px 0",
+                        background: t.palette.mode === "dark"
+                          ? "linear-gradient(180deg, #8b9aff 0%, #9775d4 100%)"
+                          : "linear-gradient(180deg, #667eea 0%, #764ba2 100%)",
+                        boxShadow: t.palette.mode === "dark"
+                          ? "0 0 12px rgba(139, 154, 255, 0.6)"
+                          : "0 0 12px rgba(102, 126, 234, 0.6)",
+                      }
+                    : {},
                   "&:hover": {
                     background: isActive
-                      ? "linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%)"
+                      ? t.palette.mode === "dark"
+                        ? "linear-gradient(135deg, rgba(139, 154, 255, 0.18) 0%, rgba(151, 117, 212, 0.18) 100%)"
+                        : "linear-gradient(135deg, rgba(102, 126, 234, 0.18) 0%, rgba(118, 75, 162, 0.18) 100%)"
+                      : t.palette.mode === "dark"
+                      ? "rgba(255, 255, 255, 0.05)"
                       : "rgba(0, 0, 0, 0.04)",
-                    transform: "translateX(4px)",
+                    transform: "translateX(6px)",
+                    boxShadow: isActive
+                      ? t.palette.mode === "dark"
+                        ? "0 6px 16px rgba(139, 154, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)"
+                        : "0 6px 16px rgba(102, 126, 234, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9)"
+                      : t.palette.mode === "dark"
+                      ? "0 2px 8px rgba(0, 0, 0, 0.3)"
+                      : "0 2px 8px rgba(0, 0, 0, 0.08)",
                   },
-                }}
+                  "&:active": {
+                    transform: "translateX(4px) scale(0.98)",
+                  },
+                })}
               >
                 <ListItemIcon
-                  sx={{
+                  sx={(t) => ({
                     minWidth: 44,
-                    color: isActive ? "#667eea" : "text.secondary",
-                    transition: "all 0.25s ease",
-                  }}
+                    color: isActive
+                      ? t.palette.mode === "dark" ? "#8b9aff" : "#667eea"
+                      : "text.secondary",
+                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    filter: isActive
+                      ? "drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3))"
+                      : "none",
+                  })}
                 >
                   {item.icon}
                 </ListItemIcon>
@@ -92,7 +142,12 @@ function SideMenu() {
                   primaryTypographyProps={{
                     fontWeight: isActive ? 700 : 600,
                     fontSize: 15,
-                    color: isActive ? "#667eea" : "text.primary",
+                    color: isActive
+                      ? (t) => t.palette.mode === "dark" ? "#8b9aff" : "#667eea"
+                      : "text.primary",
+                    sx: {
+                      transition: "all 0.3s ease",
+                    },
                   }}
                 />
               </ListItemButton>
