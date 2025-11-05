@@ -500,18 +500,41 @@ export default function Header({
           )}
         </Box>
 
-        <Box sx={{ display: { xs: "flex", md: "none" } }}>
-          <IconButton
-            size="large"
-            aria-label="show more"
-            aria-controls={mobileMenuId}
-            aria-haspopup="true"
-            onClick={handleMobileMenuOpen}
-            color="inherit"
-            sx={{ "&:hover": { backgroundColor: "action.hover" } }}
-          >
-            <MoreIcon />
-          </IconButton>
+        <Box sx={{ display: { xs: "flex", md: "none" }, alignItems: "center", gap: 0.5 }}>
+          {isAuthenticated() ? (
+            <>
+              <IconButton
+                size="medium"
+                aria-label="notifications"
+                color="inherit"
+                onClick={handleNotificationClick}
+                sx={{ "&:hover": { backgroundColor: "action.hover" } }}
+              >
+                <Badge badgeContent={unreadNotifications} color="error"><NotificationsIcon /></Badge>
+              </IconButton>
+              <IconButton
+                size="medium"
+                edge="end"
+                aria-label="account of current user"
+                aria-controls={menuId}
+                aria-haspopup="true"
+                onClick={handleProfileMenuOpen}
+                color="inherit"
+                sx={{ "&:hover": { backgroundColor: "action.hover" } }}
+              >
+                <Avatar src={user.avatar} alt={user.name} sx={{ width: 32, height: 32 }} />
+              </IconButton>
+            </>
+          ) : (
+            <IconButton
+              size="medium"
+              onClick={() => navigate("/login")}
+              color="inherit"
+              sx={{ "&:hover": { backgroundColor: "action.hover" } }}
+            >
+              <Avatar sx={{ width: 32, height: 32 }} />
+            </IconButton>
+          )}
         </Box>
       </Toolbar>
 

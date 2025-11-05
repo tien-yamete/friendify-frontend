@@ -9,8 +9,9 @@ import { logOut } from "../services/authenticationService";
 import { getPosts, createPost as createPostMock } from "../utils/mockData";
 import Scene from "./Scene";
 import Post from "../components/Post";
-import CreatePostComposer from "../components/CreatePostComposer";
+// import CreatePostComposer from "../components/CreatePostComposer"; //tạo post như facebook:v
 import RightSidebar from "../components/RightSidebar";
+import MediaUpload from "../components/MediaUpload";
 
 export default function Home() {
   const [posts, setPosts] = useState([]);
@@ -21,9 +22,11 @@ export default function Home() {
   const lastPostElementRef = useRef();
   const [anchorEl, setAnchorEl] = useState(null);
   const [newPostContent, setNewPostContent] = useState("");
+  const [mediaFiles, setMediaFiles] = useState([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const mediaUploadRef = useRef();
 
   const navigate = useNavigate();
 
@@ -32,6 +35,10 @@ export default function Home() {
   const handleClosePopover = () => {
     setAnchorEl(null);
     setNewPostContent("");
+    setMediaFiles([]);
+    if (mediaUploadRef.current) {
+      mediaUploadRef.current.clear();
+    }
   };
 
   const handleSnackbarClose = (_, r) => {
@@ -93,14 +100,24 @@ export default function Home() {
   }, [posts, loading, page, totalPages]);
 
   const handlePostContent = () => {
-    if (!newPostContent.trim()) return;
+    if (!newPostContent.trim() && mediaFiles.length === 0) return;
 
     setAnchorEl(null);
 
     createPostMock(newPostContent)
       .then((newPost) => {
+        if (mediaFiles.length > 0) {
+          newPost.media = mediaFiles.map((file) => ({
+            url: URL.createObjectURL(file),
+            type: file.type.startsWith("image/") ? "image" : "video",
+          }));
+        }
         setPosts((prev) => [newPost, ...prev]);
         setNewPostContent("");
+        setMediaFiles([]);
+        if (mediaUploadRef.current) {
+          mediaUploadRef.current.clear();
+        }
         setSnackbarMessage("Đã tạo bài viết thành công!");
         setSnackbarSeverity("success");
         setSnackbarOpen(true);
@@ -135,7 +152,7 @@ export default function Home() {
             minWidth: 0,
           }}
         >
-          <CreatePostComposer onClick={handleCreatePostClick} />
+          {/* <CreatePostComposer onClick={handleCreatePostClick} /> */}
 
           {posts.map((post, index) => {
             const isLast = posts.length === index + 1;
@@ -176,6 +193,7 @@ export default function Home() {
         </Box>
       </Box>
 
+      {/* button tạo post */}
       <Fab
         color="primary"
         aria-label="add"
@@ -265,6 +283,13 @@ export default function Home() {
           }}
         />
 
+        <MediaUpload
+          ref={mediaUploadRef}
+          onFilesChange={setMediaFiles}
+          maxFiles={8}
+          addButtonLabel="Thêm ảnh hoặc video"
+        />
+
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1.5 }}>
           <Button
             variant="outlined"
@@ -286,7 +311,7 @@ export default function Home() {
           <Button
             variant="contained"
             onClick={handlePostContent}
-            disabled={!newPostContent.trim()}
+            disabled={!newPostContent.trim() && mediaFiles.length === 0}
             sx={(t) => ({
               textTransform: "none",
               fontWeight: 600,
