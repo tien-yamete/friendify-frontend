@@ -17,10 +17,13 @@ import {
   CircularProgress,
   Alert,
   Stack,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import AddIcon from "@mui/icons-material/Add";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Scene from "./Scene";
 import NewChatPopover from "../components/NewChatPopover";
 
@@ -105,6 +108,10 @@ const mergeMessages = (existing = [], incoming = []) => {
 
 // ---------- Component ----------
 export default function Chat() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  
   const [message, setMessage] = useState("");
   const [newChatAnchorEl, setNewChatAnchorEl] = useState(null);
   const [conversations, setConversations] = useState([]);
@@ -112,6 +119,7 @@ export default function Chat() {
   const [error, setError] = useState(null);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messagesMap, setMessagesMap] = useState({});
+  const [showChatOnMobile, setShowChatOnMobile] = useState(false);
   const messageContainerRef = useRef(null);
 
   // mounted guard to avoid setState on unmounted component
@@ -153,6 +161,7 @@ export default function Chat() {
     const exists = conversations.find((c) => c.conversationName === user.displayName);
     if (exists) {
       setSelectedConversation(exists);
+      if (isMobile) setShowChatOnMobile(true);
       handleCloseNewChat();
       return;
     }
@@ -174,6 +183,7 @@ export default function Chat() {
 
     setConversations((prev) => [newConversation, ...prev]);
     setSelectedConversation(newConversation);
+    if (isMobile) setShowChatOnMobile(true);
     setMessagesMap((prev) => ({
       ...prev,
       [convId]: [
@@ -211,12 +221,12 @@ export default function Chat() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Initialize selection when conversations arrive
+  // Initialize selection when conversations arrive (only on desktop)
   useEffect(() => {
-    if (conversations.length > 0 && !selectedConversation) {
+    if (conversations.length > 0 && !selectedConversation && !isMobile) {
       setSelectedConversation(conversations[0]);
     }
-  }, [conversations, selectedConversation]);
+  }, [conversations, selectedConversation, isMobile]);
 
   // Load messages when conversation selected
   useEffect(() => {
@@ -266,6 +276,13 @@ export default function Chat() {
 
   const handleConversationSelect = (conversation) => {
     setSelectedConversation(conversation);
+    if (isMobile) {
+      setShowChatOnMobile(true);
+    }
+  };
+
+  const handleBackToConversations = () => {
+    setShowChatOnMobile(false);
   };
 
   // Send message (optimistic UI) with proper replace of temp message
@@ -337,12 +354,17 @@ export default function Chat() {
     }
   };
 
+  // Calculate height based on screen size
+  const cardHeight = isMobile 
+    ? 'calc(100vh - 64px - 64px)' // subtract header and bottom nav
+    : 'calc(100vh - 64px)'; // only subtract header
+
   return (
     <Scene>
       <Card
         sx={{
           width: "100%",
-          height: "calc(100vh - 64px)",
+          height: cardHeight,
           maxHeight: "100%",
           display: "flex",
           flexDirection: "row",
@@ -352,17 +374,17 @@ export default function Chat() {
         {/* Conversations List */}
         <Box
           sx={{
-            width: 300,
-            borderRight: 1,
+            width: { xs: '100%', md: 300 },
+            borderRight: { xs: 0, md: 1 },
             borderColor: "divider",
-            display: "flex",
+            display: isMobile && showChatOnMobile ? 'none' : 'flex',
             flexDirection: "column",
-            minHeight: 0, // important to prevent parent stretch
+            minHeight: 0,
           }}
         >
           <Box
             sx={{
-              p: 2,
+              p: { xs: 1.5, sm: 2 },
               borderBottom: 1,
               borderColor: "divider",
               display: "flex",
@@ -370,7 +392,9 @@ export default function Chat() {
               alignItems: "center",
             }}
           >
-            <Typography variant="h6">Chats</Typography>
+            <Typography variant="h6" sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+              Chats
+            </Typography>
             <IconButton
               color="primary"
               size="small"
@@ -414,7 +438,9 @@ export default function Chat() {
               </Box>
             ) : conversations == null || conversations.length === 0 ? (
               <Box sx={{ p: 2, textAlign: "center" }}>
-                <Typography color="text.secondary">No conversations yet. Start a new chat to begin.</Typography>
+                <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                  No conversations yet. Start a new chat to begin.
+                </Typography>
               </Box>
             ) : (
               <List sx={{ width: "100%" }}>
@@ -425,28 +451,57 @@ export default function Chat() {
                       onClick={() => handleConversationSelect(conversation)}
                       sx={{
                         cursor: "pointer",
+                        py: { xs: 1, sm: 1.5 },
+                        px: { xs: 1.5, sm: 2 },
                         bgcolor: selectedConversation?.id === conversation.id ? "rgba(0,0,0,0.04)" : "transparent",
                         "&:hover": { bgcolor: "rgba(0,0,0,0.08)" },
                       }}
                     >
                       <ListItemAvatar>
                         <Badge color="error" badgeContent={conversation.unread} invisible={conversation.unread === 0} overlap="circular">
-                          <Avatar src={conversation.conversationAvatar || ""} />
+                          <Avatar 
+                            src={conversation.conversationAvatar || ""} 
+                            sx={{ width: { xs: 40, sm: 48 }, height: { xs: 40, sm: 48 } }}
+                          />
                         </Badge>
                       </ListItemAvatar>
                       <ListItemText
                         primary={
                           <Stack direction="row" display={"flex"} justifyContent="space-between" alignItems="center">
-                            <Typography component="span" variant="body2" color="text.primary" noWrap sx={{ display: "inline" }}>
+                            <Typography 
+                              component="span" 
+                              variant="body2" 
+                              color="text.primary" 
+                              noWrap 
+                              sx={{ 
+                                display: "inline",
+                                fontSize: { xs: '0.875rem', sm: '0.875rem' }
+                              }}
+                            >
                               {conversation.conversationName}
                             </Typography>
-                            <Typography component="span" variant="body2" color="text.secondary" sx={{ display: "inline", fontSize: "0.7rem" }}>
+                            <Typography 
+                              component="span" 
+                              variant="body2" 
+                              color="text.secondary" 
+                              sx={{ 
+                                display: "inline", 
+                                fontSize: { xs: '0.65rem', sm: '0.7rem' },
+                                ml: 1
+                              }}
+                            >
                               {new Date(conversation.modifiedDate).toLocaleString("vi-VN", { year: "numeric", month: "numeric", day: "numeric" })}
                             </Typography>
                           </Stack>
                         }
                         secondary={
-                          <Typography sx={{ display: "inline" }} component="span" variant="body2" color="text.primary" noWrap>
+                          <Typography 
+                            sx={{ display: "inline", fontSize: { xs: '0.8rem', sm: '0.875rem' } }} 
+                            component="span" 
+                            variant="body2" 
+                            color="text.primary" 
+                            noWrap
+                          >
                             {conversation.lastMessage || "Start a conversation"}
                           </Typography>
                         }
@@ -466,16 +521,46 @@ export default function Chat() {
         <Box
           sx={{
             flexGrow: 1,
-            display: "flex",
+            display: isMobile && !showChatOnMobile ? 'none' : 'flex',
             flexDirection: "column",
-            minHeight: 0, // allow child scroll area to shrink properly
+            minHeight: 0,
+            width: isMobile ? '100%' : 'auto',
           }}
         >
           {selectedConversation ? (
             <>
-              <Box sx={{ p: 2, borderBottom: 1, borderColor: "divider", display: "flex", alignItems: "center" }}>
-                <Avatar src={selectedConversation.conversationAvatar} sx={{ mr: 2 }} />
-                <Typography variant="h6">{selectedConversation.conversationName}</Typography>
+              <Box 
+                sx={{ 
+                  p: { xs: 1.5, sm: 2 }, 
+                  borderBottom: 1, 
+                  borderColor: "divider", 
+                  display: "flex", 
+                  alignItems: "center" 
+                }}
+              >
+                {isMobile && (
+                  <IconButton 
+                    onClick={handleBackToConversations} 
+                    sx={{ mr: 1 }}
+                    size="small"
+                  >
+                    <ArrowBackIcon />
+                  </IconButton>
+                )}
+                <Avatar 
+                  src={selectedConversation.conversationAvatar} 
+                  sx={{ 
+                    mr: { xs: 1.5, sm: 2 },
+                    width: { xs: 36, sm: 40 },
+                    height: { xs: 36, sm: 40 }
+                  }} 
+                />
+                <Typography 
+                  variant="h6" 
+                  sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}
+                >
+                  {selectedConversation.conversationName}
+                </Typography>
               </Box>
 
               <Box
@@ -484,7 +569,7 @@ export default function Chat() {
                 sx={{
                   flex: "1 1 auto",
                   minHeight: 0,
-                  p: 2,
+                  p: { xs: 1.5, sm: 2 },
                   overflowY: "auto",
                   display: "flex",
                   flexDirection: "column",
@@ -493,47 +578,131 @@ export default function Chat() {
               >
                 <Box sx={{ display: "flex", flexDirection: "column", width: "100%", justifyContent: "flex-end", flex: "1 1 auto", minHeight: 0 }}>
                   {currentMessages.map((msg) => (
-                    <Box key={msg.id} sx={{ display: "flex", justifyContent: msg.me ? "flex-end" : "flex-start", mb: 2 }}>
+                    <Box 
+                      key={msg.id} 
+                      sx={{ 
+                        display: "flex", 
+                        justifyContent: msg.me ? "flex-end" : "flex-start", 
+                        mb: { xs: 1.5, sm: 2 } 
+                      }}
+                    >
                       {!msg.me && (
-                        <Avatar src={msg.sender?.avatar} sx={{ mr: 1, alignSelf: "flex-end", width: 32, height: 32 }} />
+                        <Avatar 
+                          src={msg.sender?.avatar} 
+                          sx={{ 
+                            mr: 1, 
+                            alignSelf: "flex-end", 
+                            width: { xs: 28, sm: 32 }, 
+                            height: { xs: 28, sm: 32 },
+                            display: { xs: 'none', sm: 'flex' }
+                          }} 
+                        />
                       )}
                       <Paper
                         elevation={1}
                         sx={{
-                          p: 2,
-                          maxWidth: "70%",
+                          p: { xs: 1.5, sm: 2 },
+                          maxWidth: { xs: '85%', sm: '80%', md: '70%' },
                           backgroundColor: msg.me ? (msg.failed ? "#ffebee" : "#e3f2fd") : "#f5f5f5",
                           borderRadius: 2,
                           opacity: msg.pending ? 0.7 : 1,
                         }}
                       >
-                        <Typography variant="body1">{msg.message}</Typography>
+                        <Typography 
+                          variant="body1" 
+                          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                        >
+                          {msg.message}
+                        </Typography>
                         <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end" sx={{ mt: 1 }}>
-                          {msg.failed && <Typography variant="caption" color="error">Gửi thất bại</Typography>}
-                          {msg.pending && <Typography variant="caption" color="text.secondary">Đang gửi...</Typography>}
-                          <Typography variant="caption" sx={{ display: "block", textAlign: "right" }}>
+                          {msg.failed && (
+                            <Typography variant="caption" color="error" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
+                              Gửi thất bại
+                            </Typography>
+                          )}
+                          {msg.pending && (
+                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
+                              Đang gửi...
+                            </Typography>
+                          )}
+                          <Typography 
+                            variant="caption" 
+                            sx={{ 
+                              display: "block", 
+                              textAlign: "right",
+                              fontSize: { xs: '0.65rem', sm: '0.75rem' }
+                            }}
+                          >
                             {new Date(msg.createdDate).toLocaleString()}
                           </Typography>
                         </Stack>
                       </Paper>
                       {msg.me && (
-                        <Avatar sx={{ ml: 1, alignSelf: "flex-end", width: 32, height: 32, bgcolor: "#1976d2" }}>You</Avatar>
+                        <Avatar 
+                          sx={{ 
+                            ml: 1, 
+                            alignSelf: "flex-end", 
+                            width: { xs: 28, sm: 32 }, 
+                            height: { xs: 28, sm: 32 }, 
+                            bgcolor: "#1976d2",
+                            fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                            display: { xs: 'none', sm: 'flex' }
+                          }}
+                        >
+                          You
+                        </Avatar>
                       )}
                     </Box>
                   ))}
                 </Box>
               </Box>
 
-              <Box component="form" sx={{ p: 2, borderTop: 1, borderColor: "divider", display: "flex" }} onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}>
-                <TextField fullWidth placeholder="Type a message" variant="outlined" value={message} onChange={(e) => setMessage(e.target.value)} size="small" />
-                <IconButton color="primary" sx={{ ml: 1 }} onClick={handleSendMessage} disabled={!message.trim()}>
-                  <SendIcon />
+              <Box 
+                component="form" 
+                sx={{ 
+                  p: { xs: 1.5, sm: 2 }, 
+                  borderTop: 1, 
+                  borderColor: "divider", 
+                  display: "flex",
+                  gap: { xs: 0.5, sm: 1 }
+                }} 
+                onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
+              >
+                <TextField 
+                  fullWidth 
+                  placeholder="Type a message" 
+                  variant="outlined" 
+                  value={message} 
+                  onChange={(e) => setMessage(e.target.value)} 
+                  size="small"
+                  sx={{
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: '0.875rem', sm: '1rem' }
+                    }
+                  }}
+                />
+                <IconButton 
+                  color="primary" 
+                  onClick={handleSendMessage} 
+                  disabled={!message.trim()}
+                  size={isSmallScreen ? "small" : "medium"}
+                >
+                  <SendIcon fontSize={isSmallScreen ? "small" : "medium"} />
                 </IconButton>
               </Box>
             </>
           ) : (
-            <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
-              <Typography variant="h6" color="text.secondary">Select a conversation to start chatting</Typography>
+            <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%", p: 2 }}>
+              <Typography 
+                variant="h6" 
+                color="text.secondary" 
+                sx={{ 
+                  fontSize: { xs: '0.875rem', sm: '1.25rem' },
+                  textAlign: 'center'
+                }}
+              >
+                Select a conversation to start chatting
+              </Typography>
             </Box>
           )}
         </Box>

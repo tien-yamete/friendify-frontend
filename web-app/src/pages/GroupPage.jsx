@@ -58,7 +58,7 @@ const mockMyGroups = [
     members: 8200,
     privacy: "public",
     unreadPosts: 0,
-    lastActivity: "1 giờ trước",
+    lastActivity: "1 giờ tr����c",
     description: "Chia sẻ địa điểm du lịch tại Hà Nội",
   },
   {
@@ -277,25 +277,25 @@ export default function Groups() {
           justifyContent: "center",
         }}
       >
-        <Box sx={{ width: "100%", maxWidth: 1200, py: 2 }}>
+        <Box sx={{ width: "100%", maxWidth: 1200, py: { xs: 1, sm: 2 }, px: { xs: 0.5, sm: 2 } }}>
           {/* Header */}
           <Card
             elevation={0}
             sx={(t) => ({
-              borderRadius: 4,
-              p: 3,
-              mb: 3,
+              borderRadius: { xs: 2, sm: 4 },
+              p: { xs: 1.5, sm: 3 },
+              mb: { xs: 2, sm: 3 },
               boxShadow: t.shadows[1],
               border: "1px solid",
               borderColor: "divider",
               bgcolor: "background.paper",
             })}
           >
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: { xs: 1.5, sm: 2 }, flexWrap: "wrap", gap: { xs: 1, sm: 2 } }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, sm: 2 } }}>
                 <Typography
                   sx={{
-                    fontSize: 26,
+                    fontSize: { xs: 18, sm: 26 },
                     fontWeight: 700,
                     background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                     WebkitBackgroundClip: "text",
@@ -305,47 +305,64 @@ export default function Groups() {
                   Nhóm
                 </Typography>
                 <Chip
-                  icon={<GroupsIcon />}
+                  icon={<GroupsIcon sx={{ fontSize: { xs: 14, sm: 18 } }} />}
                   label={`${myGroups.length} nhóm`}
+                  size="small"
                   sx={{
                     background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                     color: "white",
                     fontWeight: 600,
+                    height: { xs: 24, sm: 28 },
+                    fontSize: { xs: 11, sm: 13 },
                   }}
                 />
               </Box>
 
               <Button
                 variant="contained"
-                startIcon={<AddIcon />}
+                startIcon={<AddIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />}
                 onClick={() => setCreateDialogOpen(true)}
+                size="small"
                 sx={{
                   textTransform: "none",
                   fontWeight: 600,
-                  borderRadius: 3,
-                  px: 3,
+                  borderRadius: { xs: 2, sm: 3 },
+                  px: { xs: 1.5, sm: 3 },
+                  py: { xs: 0.5, sm: 0.75 },
+                  fontSize: { xs: 12, sm: 14 },
+                  minWidth: { xs: "auto", sm: "auto" },
                   background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                   "&:hover": {
                     background: "linear-gradient(135deg, #5568d3 0%, #63428a 100%)",
                   },
                 }}
               >
-                Tạo nhóm mới
+                <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>Tạo nhóm mới</Box>
+                <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>Tạo nhóm</Box>
               </Button>
             </Box>
 
             <Tabs
               value={tabValue}
               onChange={handleTabChange}
+              variant="scrollable"
+              scrollButtons="auto"
+              allowScrollButtonsMobile
               sx={{
+                minHeight: { xs: 40, sm: 48 },
                 "& .MuiTab-root": {
                   textTransform: "none",
-                  fontSize: 15,
+                  fontSize: { xs: 12, sm: 15 },
                   fontWeight: 600,
-                  minHeight: 48,
+                  minHeight: { xs: 40, sm: 48 },
+                  px: { xs: 1.5, sm: 3 },
+                  minWidth: { xs: "auto", sm: 90 },
                 },
                 "& .Mui-selected": {
                   color: "primary.main",
+                },
+                "& .MuiTabs-scrollButtons": {
+                  width: { xs: 30, sm: 40 },
                 },
               }}
             >
@@ -361,9 +378,9 @@ export default function Groups() {
               <Card
                 elevation={0}
                 sx={(t) => ({
-                  borderRadius: 4,
-                  p: 2.5,
-                  mb: 3,
+                  borderRadius: { xs: 2, sm: 4 },
+                  p: { xs: 1.5, sm: 2.5 },
+                  mb: { xs: 2, sm: 3 },
                   boxShadow: t.shadows[1],
                   border: "1px solid",
                   borderColor: "divider",
@@ -375,18 +392,20 @@ export default function Groups() {
                   placeholder="Tìm kiếm nhóm của bạn..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  size="small"
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <SearchIcon color="action" />
+                        <SearchIcon color="action" sx={{ fontSize: { xs: 20, sm: 24 } }} />
                       </InputAdornment>
                     ),
                   }}
                   sx={{
                     "& .MuiOutlinedInput-root": {
-                      borderRadius: 3,
+                      borderRadius: { xs: 2, sm: 3 },
                       bgcolor: (t) =>
                         t.palette.mode === "dark" ? "rgba(255,255,255,0.04)" : "background.default",
+                      fontSize: { xs: 13, sm: 15 },
                       "& fieldset": { borderColor: "divider" },
                       "&:hover fieldset": { borderColor: "primary.main" },
                       "&.Mui-focused fieldset": { borderColor: "primary.main", borderWidth: 2 },
@@ -399,8 +418,8 @@ export default function Groups() {
                 <Card
                   elevation={0}
                   sx={(t) => ({
-                    borderRadius: 4,
-                    p: 6,
+                    borderRadius: { xs: 2, sm: 4 },
+                    p: { xs: 3, sm: 6 },
                     textAlign: "center",
                     boxShadow: t.shadows[1],
                     border: "1px solid",
@@ -408,18 +427,22 @@ export default function Groups() {
                     bgcolor: "background.paper",
                   })}
                 >
-                  <GroupsIcon sx={{ fontSize: 64, color: "text.disabled", mb: 2 }} />
-                  <Typography variant="h6" color="text.secondary" mb={2}>
+                  <GroupsIcon sx={{ fontSize: { xs: 48, sm: 64 }, color: "text.disabled", mb: { xs: 1.5, sm: 2 } }} />
+                  <Typography variant="h6" color="text.secondary" mb={2} sx={{ fontSize: { xs: 16, sm: 20 } }}>
                     Không tìm thấy nhóm nào
                   </Typography>
                   <Button
                     variant="contained"
-                    startIcon={<AddIcon />}
+                    startIcon={<AddIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />}
                     onClick={() => setCreateDialogOpen(true)}
+                    size="small"
                     sx={{
                       textTransform: "none",
                       fontWeight: 600,
-                      borderRadius: 3,
+                      borderRadius: { xs: 2, sm: 3 },
+                      px: { xs: 2, sm: 3 },
+                      py: { xs: 1, sm: 1.25 },
+                      fontSize: { xs: 13, sm: 15 },
                       background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                       "&:hover": {
                         background: "linear-gradient(135deg, #5568d3 0%, #63428a 100%)",
@@ -430,14 +453,14 @@ export default function Groups() {
                   </Button>
                 </Card>
               ) : (
-                <Grid container spacing={2.5}>
+                <Grid container spacing={{ xs: 1.5, sm: 2.5 }}>
                   {filteredMyGroups.map((group) => (
-                    <Grid item xs={12} md={6} key={group.id}>
+                    <Grid item xs={12} sm={12} md={6} key={group.id}>
                       <Card
                         elevation={0}
                         sx={(t) => ({
-                          borderRadius: 4,
-                          p: 3,
+                          borderRadius: { xs: 2, sm: 4 },
+                          p: { xs: 1.5, sm: 3 },
                           boxShadow: t.shadows[1],
                           border: "1px solid",
                           borderColor: "divider",
@@ -445,77 +468,83 @@ export default function Groups() {
                           transition: "all 0.3s ease",
                           "&:hover": {
                             boxShadow: t.shadows[4],
-                            transform: "translateY(-4px)",
+                            transform: { xs: "none", sm: "translateY(-4px)" },
                           },
                         })}
                       >
-                        <Box sx={{ display: "flex", alignItems: "flex-start", mb: 2 }}>
+                        <Box sx={{ display: "flex", alignItems: "flex-start", mb: { xs: 1.5, sm: 2 } }}>
                           <Badge
                             badgeContent={group.unreadPosts}
                             color="error"
                             max={99}
                             sx={{
                               "& .MuiBadge-badge": {
-                                top: 8,
-                                right: 8,
+                                top: { xs: 4, sm: 8 },
+                                right: { xs: 4, sm: 8 },
+                                fontSize: { xs: 9, sm: 11 },
+                                minWidth: { xs: 16, sm: 20 },
+                                height: { xs: 16, sm: 20 },
                               },
                             }}
                           >
                             <Avatar
                               src={group.avatar}
                               sx={{
-                                width: 72,
-                                height: 72,
-                                mr: 2,
-                                border: "3px solid",
+                                width: { xs: 50, sm: 72 },
+                                height: { xs: 50, sm: 72 },
+                                mr: { xs: 1.5, sm: 2 },
+                                border: { xs: "2px solid", sm: "3px solid" },
                                 borderColor: "divider",
                               }}
                             />
                           </Badge>
-                          <Box sx={{ flex: 1 }}>
-                            <Typography variant="h6" fontWeight={700} mb={0.5}>
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography variant="h6" fontWeight={700} mb={0.5} noWrap sx={{ fontSize: { xs: 14, sm: 18 } }}>
                               {group.name}
                             </Typography>
-                            <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+                            <Stack direction="row" spacing={0.5} alignItems="center" mb={0.5} flexWrap="wrap" sx={{ gap: 0.5 }}>
                               <Chip
-                                icon={group.privacy === "public" ? <PublicIcon /> : <LockIcon />}
+                                icon={group.privacy === "public" ? <PublicIcon sx={{ fontSize: { xs: 12, sm: 14 } }} /> : <LockIcon sx={{ fontSize: { xs: 12, sm: 14 } }} />}
                                 label={group.privacy === "public" ? "Công khai" : "Riêng tư"}
                                 size="small"
-                                sx={{ height: 24, fontSize: 12 }}
+                                sx={{ height: { xs: 18, sm: 24 }, fontSize: { xs: 9, sm: 12 }, "& .MuiChip-label": { px: { xs: 0.5, sm: 1 } } }}
                               />
                               <Chip
-                                icon={<PeopleIcon />}
-                                label={`${group.members.toLocaleString()} thành viên`}
+                                icon={<PeopleIcon sx={{ fontSize: { xs: 12, sm: 14 } }} />}
+                                label={`${group.members.toLocaleString()}`}
                                 size="small"
-                                sx={{ height: 24, fontSize: 12 }}
+                                sx={{ height: { xs: 18, sm: 24 }, fontSize: { xs: 9, sm: 12 }, "& .MuiChip-label": { px: { xs: 0.5, sm: 1 } } }}
                               />
                             </Stack>
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: 9, sm: 12 } }}>
                               Hoạt động: {group.lastActivity}
                             </Typography>
                           </Box>
-                          <IconButton size="small">
+                          <IconButton size="small" sx={{ display: { xs: "none", sm: "inline-flex" } }}>
                             <SettingsIcon />
                           </IconButton>
                         </Box>
 
-                        <Typography variant="body2" color="text.secondary" mb={2}>
+                        <Typography variant="body2" color="text.secondary" mb={1.5} sx={{ fontSize: { xs: 12, sm: 14 }, display: { xs: "-webkit-box", sm: "block" }, WebkitLineClamp: { xs: 2, sm: "none" }, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                           {group.description}
                         </Typography>
 
-                        <Divider sx={{ my: 2 }} />
+                        <Divider sx={{ my: { xs: 1.5, sm: 2 } }} />
 
-                        <Stack direction="row" spacing={1}>
+                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
                           <Button
                             fullWidth
                             variant="outlined"
-                            startIcon={<NotificationsActiveIcon />}
+                            startIcon={<NotificationsActiveIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />}
+                            size="small"
                             sx={{
                               textTransform: "none",
                               fontWeight: 600,
-                              borderRadius: 2.5,
+                              borderRadius: { xs: 2, sm: 2.5 },
                               borderColor: "divider",
                               color: "text.secondary",
+                              fontSize: { xs: 12, sm: 14 },
+                              py: { xs: 0.75, sm: 1 },
                               "&:hover": {
                                 borderColor: "primary.main",
                                 color: "primary.main",
@@ -528,14 +557,17 @@ export default function Groups() {
                           <Button
                             fullWidth
                             variant="outlined"
-                            startIcon={<ExitToAppIcon />}
+                            startIcon={<ExitToAppIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />}
                             onClick={() => handleLeaveGroup(group.id)}
+                            size="small"
                             sx={{
                               textTransform: "none",
                               fontWeight: 600,
-                              borderRadius: 2.5,
+                              borderRadius: { xs: 2, sm: 2.5 },
                               borderColor: "divider",
                               color: "text.secondary",
+                              fontSize: { xs: 12, sm: 14 },
+                              py: { xs: 0.75, sm: 1 },
                               "&:hover": {
                                 borderColor: "error.main",
                                 color: "error.main",
@@ -557,14 +589,14 @@ export default function Groups() {
           {/* Tab 1: Suggested Groups */}
           {tabValue === 1 && (
             <Box>
-              <Grid container spacing={2.5}>
+              <Grid container spacing={{ xs: 1.5, sm: 2.5 }}>
                 {suggestedGroups.map((group) => (
                   <Grid item xs={12} sm={6} md={4} key={group.id}>
                     <Card
                       elevation={0}
                       sx={(t) => ({
-                        borderRadius: 4,
-                        p: 2.5,
+                        borderRadius: { xs: 2, sm: 4 },
+                        p: { xs: 1.5, sm: 2.5 },
                         boxShadow: t.shadows[1],
                         border: "1px solid",
                         borderColor: "divider",
@@ -572,7 +604,7 @@ export default function Groups() {
                         transition: "all 0.3s ease",
                         "&:hover": {
                           boxShadow: t.shadows[4],
-                          transform: "translateY(-4px)",
+                          transform: { xs: "none", sm: "translateY(-4px)" },
                         },
                       })}
                     >
@@ -580,32 +612,32 @@ export default function Groups() {
                         <Avatar
                           src={group.avatar}
                           sx={{
-                            width: 96,
-                            height: 96,
-                            mb: 2,
-                            border: "3px solid",
+                            width: { xs: 70, sm: 96 },
+                            height: { xs: 70, sm: 96 },
+                            mb: { xs: 1.5, sm: 2 },
+                            border: { xs: "2px solid", sm: "3px solid" },
                             borderColor: "divider",
                           }}
                         />
-                        <Typography variant="h6" fontWeight={700} mb={0.5} textAlign="center">
+                        <Typography variant="h6" fontWeight={700} mb={0.5} textAlign="center" sx={{ fontSize: { xs: 14, sm: 18 }, px: 1 }}>
                           {group.name}
                         </Typography>
-                        <Chip label={group.category} size="small" sx={{ mb: 1 }} />
-                        <Stack direction="row" spacing={1} mb={1}>
+                        <Chip label={group.category} size="small" sx={{ mb: 1, fontSize: { xs: 9, sm: 12 }, height: { xs: 20, sm: 24 } }} />
+                        <Stack direction="row" spacing={0.5} mb={1} flexWrap="wrap" justifyContent="center" sx={{ gap: 0.5 }}>
                           <Chip
-                            icon={group.privacy === "public" ? <PublicIcon /> : <LockIcon />}
+                            icon={group.privacy === "public" ? <PublicIcon sx={{ fontSize: { xs: 12, sm: 14 } }} /> : <LockIcon sx={{ fontSize: { xs: 12, sm: 14 } }} />}
                             label={group.privacy === "public" ? "Công khai" : "Riêng tư"}
                             size="small"
-                            sx={{ height: 22, fontSize: 11 }}
+                            sx={{ height: { xs: 18, sm: 22 }, fontSize: { xs: 9, sm: 11 }, "& .MuiChip-label": { px: { xs: 0.5, sm: 1 } } }}
                           />
                           <Chip
-                            icon={<PeopleIcon />}
+                            icon={<PeopleIcon sx={{ fontSize: { xs: 12, sm: 14 } }} />}
                             label={group.members.toLocaleString()}
                             size="small"
-                            sx={{ height: 22, fontSize: 11 }}
+                            sx={{ height: { xs: 18, sm: 22 }, fontSize: { xs: 9, sm: 11 }, "& .MuiChip-label": { px: { xs: 0.5, sm: 1 } } }}
                           />
                         </Stack>
-                        <Typography variant="caption" color="text.secondary" mb={1}>
+                        <Typography variant="caption" color="text.secondary" mb={1} sx={{ fontSize: { xs: 10, sm: 12 } }}>
                           {group.mutualMembers} bạn chung
                         </Typography>
                         <Typography
@@ -613,7 +645,7 @@ export default function Groups() {
                           color="text.secondary"
                           textAlign="center"
                           mb={2}
-                          sx={{ minHeight: 40 }}
+                          sx={{ minHeight: { xs: 28, sm: 40 }, fontSize: { xs: 11, sm: 14 }, px: 1, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
                         >
                           {group.description}
                         </Typography>
@@ -623,10 +655,13 @@ export default function Groups() {
                             fullWidth
                             variant="contained"
                             onClick={() => handleJoinGroup(group.id)}
+                            size="small"
                             sx={{
                               textTransform: "none",
                               fontWeight: 600,
-                              borderRadius: 2.5,
+                              borderRadius: { xs: 2, sm: 2.5 },
+                              fontSize: { xs: 12, sm: 14 },
+                              py: { xs: 0.75, sm: 1 },
                               background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                               "&:hover": {
                                 background: "linear-gradient(135deg, #5568d3 0%, #63428a 100%)",
@@ -637,14 +672,17 @@ export default function Groups() {
                           </Button>
                           <IconButton
                             onClick={() => handleRemoveSuggestion(group.id)}
+                            size="small"
                             sx={{
-                              borderRadius: 2.5,
+                              borderRadius: { xs: 2, sm: 2.5 },
                               border: "1px solid",
                               borderColor: "divider",
+                              width: { xs: 36, sm: 40 },
+                              height: { xs: 36, sm: 40 },
                               "&:hover": { bgcolor: "action.hover" },
                             }}
                           >
-                            <ExitToAppIcon />
+                            <ExitToAppIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
                           </IconButton>
                         </Stack>
                       </Box>
@@ -658,14 +696,14 @@ export default function Groups() {
           {/* Tab 2: Discover Groups */}
           {tabValue === 2 && (
             <Box>
-              <Grid container spacing={2.5}>
+              <Grid container spacing={{ xs: 1.5, sm: 2.5 }}>
                 {discoverGroups.map((group) => (
                   <Grid item xs={12} sm={6} md={4} key={group.id}>
                     <Card
                       elevation={0}
                       sx={(t) => ({
-                        borderRadius: 4,
-                        p: 2.5,
+                        borderRadius: { xs: 2, sm: 4 },
+                        p: { xs: 1.5, sm: 2.5 },
                         boxShadow: t.shadows[1],
                         border: "1px solid",
                         borderColor: "divider",
@@ -674,22 +712,24 @@ export default function Groups() {
                         transition: "all 0.3s ease",
                         "&:hover": {
                           boxShadow: t.shadows[4],
-                          transform: "translateY(-4px)",
+                          transform: { xs: "none", sm: "translateY(-4px)" },
                         },
                       })}
                     >
                       {group.trending && (
                         <Chip
-                          icon={<TrendingUpIcon />}
+                          icon={<TrendingUpIcon sx={{ fontSize: { xs: 12, sm: 16 } }} />}
                           label="Đang thịnh hành"
                           size="small"
                           color="error"
                           sx={{
                             position: "absolute",
-                            top: 12,
-                            right: 12,
+                            top: { xs: 6, sm: 12 },
+                            right: { xs: 6, sm: 12 },
                             fontWeight: 600,
-                            fontSize: 11,
+                            fontSize: { xs: 8, sm: 11 },
+                            height: { xs: 18, sm: 24 },
+                            "& .MuiChip-label": { px: { xs: 0.5, sm: 1 } },
                           }}
                         />
                       )}
@@ -698,44 +738,44 @@ export default function Groups() {
                         <Avatar
                           src={group.avatar}
                           sx={{
-                            width: 96,
-                            height: 96,
-                            mb: 2,
-                            border: "3px solid",
+                            width: { xs: 70, sm: 96 },
+                            height: { xs: 70, sm: 96 },
+                            mb: { xs: 1.5, sm: 2 },
+                            border: { xs: "2px solid", sm: "3px solid" },
                             borderColor: "divider",
                           }}
                         />
-                        <Typography variant="h6" fontWeight={700} mb={0.5} textAlign="center">
+                        <Typography variant="h6" fontWeight={700} mb={0.5} textAlign="center" sx={{ fontSize: { xs: 14, sm: 18 }, px: 1 }}>
                           {group.name}
                         </Typography>
-                        <Chip label={group.category} size="small" sx={{ mb: 1 }} />
-                        <Stack direction="row" spacing={1} mb={1}>
+                        <Chip label={group.category} size="small" sx={{ mb: 1, fontSize: { xs: 9, sm: 12 }, height: { xs: 20, sm: 24 } }} />
+                        <Stack direction="row" spacing={0.5} mb={1} flexWrap="wrap" justifyContent="center" sx={{ gap: 0.5 }}>
                           <Chip
-                            icon={group.privacy === "public" ? <PublicIcon /> : <LockIcon />}
+                            icon={group.privacy === "public" ? <PublicIcon sx={{ fontSize: { xs: 12, sm: 14 } }} /> : <LockIcon sx={{ fontSize: { xs: 12, sm: 14 } }} />}
                             label={group.privacy === "public" ? "Công khai" : "Riêng tư"}
                             size="small"
-                            sx={{ height: 22, fontSize: 11 }}
+                            sx={{ height: { xs: 18, sm: 22 }, fontSize: { xs: 9, sm: 11 }, "& .MuiChip-label": { px: { xs: 0.5, sm: 1 } } }}
                           />
                           <Chip
-                            icon={<PeopleIcon />}
+                            icon={<PeopleIcon sx={{ fontSize: { xs: 12, sm: 14 } }} />}
                             label={group.members.toLocaleString()}
                             size="small"
-                            sx={{ height: 22, fontSize: 11 }}
+                            sx={{ height: { xs: 18, sm: 22 }, fontSize: { xs: 9, sm: 11 }, "& .MuiChip-label": { px: { xs: 0.5, sm: 1 } } }}
                           />
                         </Stack>
                         <Chip
-                          icon={<TrendingUpIcon />}
+                          icon={<TrendingUpIcon sx={{ fontSize: { xs: 12, sm: 14 } }} />}
                           label={group.growth}
                           size="small"
                           color="success"
-                          sx={{ mb: 1, fontSize: 11 }}
+                          sx={{ mb: 1, fontSize: { xs: 9, sm: 11 }, height: { xs: 18, sm: 24 }, "& .MuiChip-label": { px: { xs: 0.5, sm: 1 } } }}
                         />
                         <Typography
                           variant="body2"
                           color="text.secondary"
                           textAlign="center"
                           mb={2}
-                          sx={{ minHeight: 40 }}
+                          sx={{ minHeight: { xs: 28, sm: 40 }, fontSize: { xs: 11, sm: 14 }, px: 1, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
                         >
                           {group.description}
                         </Typography>
@@ -744,10 +784,13 @@ export default function Groups() {
                           fullWidth
                           variant="contained"
                           onClick={() => handleJoinGroup(group.id)}
+                          size="small"
                           sx={{
                             textTransform: "none",
                             fontWeight: 600,
-                            borderRadius: 2.5,
+                            borderRadius: { xs: 2, sm: 2.5 },
+                            fontSize: { xs: 12, sm: 14 },
+                            py: { xs: 0.75, sm: 1 },
                             background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                             "&:hover": {
                               background: "linear-gradient(135deg, #5568d3 0%, #63428a 100%)",
@@ -772,21 +815,24 @@ export default function Groups() {
         onClose={() => setCreateDialogOpen(false)}
         maxWidth="sm"
         fullWidth
+        fullScreen={(theme) => theme.breakpoints.down('sm')}
         PaperProps={{
-          sx: { borderRadius: 4 },
+          sx: { borderRadius: { xs: 0, sm: 4 } },
         }}
       >
-        <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>Tạo nhóm mới</DialogTitle>
-        <DialogContent>
-          <Stack spacing={3} sx={{ mt: 2 }}>
+        <DialogTitle sx={{ fontWeight: 700, pb: 1, fontSize: { xs: 18, sm: 24 }, px: { xs: 2, sm: 3 }, pt: { xs: 2, sm: 3 } }}>Tạo nhóm mới</DialogTitle>
+        <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
+          <Stack spacing={{ xs: 2, sm: 3 }} sx={{ mt: { xs: 1, sm: 2 } }}>
             <TextField
               fullWidth
               label="Tên nhóm"
               placeholder="Nhập tên nhóm..."
               value={newGroup.name}
               onChange={(e) => setNewGroup({ ...newGroup, name: e.target.value })}
+              size="small"
               sx={{
-                "& .MuiOutlinedInput-root": { borderRadius: 3 },
+                "& .MuiOutlinedInput-root": { borderRadius: { xs: 2, sm: 3 }, fontSize: { xs: 14, sm: 16 } },
+                "& .MuiInputLabel-root": { fontSize: { xs: 14, sm: 16 } },
               }}
             />
             <TextField
@@ -797,26 +843,28 @@ export default function Groups() {
               rows={3}
               value={newGroup.description}
               onChange={(e) => setNewGroup({ ...newGroup, description: e.target.value })}
+              size="small"
               sx={{
-                "& .MuiOutlinedInput-root": { borderRadius: 3 },
+                "& .MuiOutlinedInput-root": { borderRadius: { xs: 2, sm: 3 }, fontSize: { xs: 14, sm: 16 } },
+                "& .MuiInputLabel-root": { fontSize: { xs: 14, sm: 16 } },
               }}
             />
-            <FormControl fullWidth>
-              <InputLabel>Quyền riêng tư</InputLabel>
+            <FormControl fullWidth size="small">
+              <InputLabel sx={{ fontSize: { xs: 14, sm: 16 } }}>Quyền riêng tư</InputLabel>
               <Select
                 value={newGroup.privacy}
                 onChange={(e) => setNewGroup({ ...newGroup, privacy: e.target.value })}
                 label="Quyền riêng tư"
-                sx={{ borderRadius: 3 }}
+                sx={{ borderRadius: { xs: 2, sm: 3 }, fontSize: { xs: 14, sm: 16 } }}
               >
                 <MenuItem value="public">
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <PublicIcon fontSize="small" />
+                    <PublicIcon fontSize="small" sx={{ fontSize: { xs: 18, sm: 20 } }} />
                     <Box>
-                      <Typography variant="body2" fontWeight={600}>
+                      <Typography variant="body2" fontWeight={600} sx={{ fontSize: { xs: 13, sm: 14 } }}>
                         Công khai
                       </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: 11, sm: 12 } }}>
                         Bất kỳ ai cũng có thể tham gia
                       </Typography>
                     </Box>
@@ -824,12 +872,12 @@ export default function Groups() {
                 </MenuItem>
                 <MenuItem value="private">
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <LockIcon fontSize="small" />
+                    <LockIcon fontSize="small" sx={{ fontSize: { xs: 18, sm: 20 } }} />
                     <Box>
-                      <Typography variant="body2" fontWeight={600}>
+                      <Typography variant="body2" fontWeight={600} sx={{ fontSize: { xs: 13, sm: 14 } }}>
                         Riêng tư
                       </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: 11, sm: 12 } }}>
                         Cần phê duyệt để tham gia
                       </Typography>
                     </Box>
@@ -837,47 +885,53 @@ export default function Groups() {
                 </MenuItem>
               </Select>
             </FormControl>
-            <FormControl fullWidth>
-              <InputLabel>Danh mục</InputLabel>
+            <FormControl fullWidth size="small">
+              <InputLabel sx={{ fontSize: { xs: 14, sm: 16 } }}>Danh mục</InputLabel>
               <Select
                 value={newGroup.category}
                 onChange={(e) => setNewGroup({ ...newGroup, category: e.target.value })}
                 label="Danh mục"
-                sx={{ borderRadius: 3 }}
+                sx={{ borderRadius: { xs: 2, sm: 3 }, fontSize: { xs: 14, sm: 16 } }}
               >
-                <MenuItem value="Công nghệ">Công nghệ</MenuItem>
-                <MenuItem value="Kinh doanh">Kinh doanh</MenuItem>
-                <MenuItem value="Giáo dục">Giáo dục</MenuItem>
-                <MenuItem value="Giải trí">Giải trí</MenuItem>
-                <MenuItem value="Thể thao">Thể thao</MenuItem>
-                <MenuItem value="Nghệ thuật">Nghệ thuật</MenuItem>
-                <MenuItem value="Du lịch">Du lịch</MenuItem>
-                <MenuItem value="Ẩm thực">Ẩm thực</MenuItem>
-                <MenuItem value="Khác">Khác</MenuItem>
+                <MenuItem value="Công nghệ" sx={{ fontSize: { xs: 13, sm: 15 } }}>Công nghệ</MenuItem>
+                <MenuItem value="Kinh doanh" sx={{ fontSize: { xs: 13, sm: 15 } }}>Kinh doanh</MenuItem>
+                <MenuItem value="Giáo dục" sx={{ fontSize: { xs: 13, sm: 15 } }}>Giáo dục</MenuItem>
+                <MenuItem value="Giải trí" sx={{ fontSize: { xs: 13, sm: 15 } }}>Giải trí</MenuItem>
+                <MenuItem value="Thể thao" sx={{ fontSize: { xs: 13, sm: 15 } }}>Thể thao</MenuItem>
+                <MenuItem value="Nghệ thuật" sx={{ fontSize: { xs: 13, sm: 15 } }}>Nghệ thuật</MenuItem>
+                <MenuItem value="Du lịch" sx={{ fontSize: { xs: 13, sm: 15 } }}>Du lịch</MenuItem>
+                <MenuItem value="Ẩm thực" sx={{ fontSize: { xs: 13, sm: 15 } }}>Ẩm thực</MenuItem>
+                <MenuItem value="Khác" sx={{ fontSize: { xs: 13, sm: 15 } }}>Khác</MenuItem>
               </Select>
             </FormControl>
           </Stack>
         </DialogContent>
-        <DialogActions sx={{ p: 3, pt: 0 }}>
+        <DialogActions sx={{ p: { xs: 2, sm: 3 }, pt: { xs: 1.5, sm: 0 }, gap: { xs: 1, sm: 0 }, flexDirection: { xs: "column-reverse", sm: "row" } }}>
           <Button
+            fullWidth={{ xs: true, sm: false }}
             onClick={() => setCreateDialogOpen(false)}
             sx={{
               textTransform: "none",
               fontWeight: 600,
-              borderRadius: 3,
-              px: 3,
+              borderRadius: { xs: 2, sm: 3 },
+              px: { xs: 2, sm: 3 },
+              py: { xs: 1, sm: 0.75 },
+              fontSize: { xs: 14, sm: 15 },
             }}
           >
             Hủy
           </Button>
           <Button
+            fullWidth={{ xs: true, sm: false }}
             onClick={handleCreateGroup}
             variant="contained"
             sx={{
               textTransform: "none",
               fontWeight: 600,
-              borderRadius: 3,
-              px: 3,
+              borderRadius: { xs: 2, sm: 3 },
+              px: { xs: 2, sm: 3 },
+              py: { xs: 1, sm: 0.75 },
+              fontSize: { xs: 14, sm: 15 },
               background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
               "&:hover": {
                 background: "linear-gradient(135deg, #5568d3 0%, #63428a 100%)",
@@ -894,14 +948,14 @@ export default function Groups() {
         open={snackbar.open}
         autoHideDuration={4000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        sx={{ mt: "64px" }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        sx={{ mt: { xs: "56px", sm: "64px" }, mx: { xs: 1, sm: 0 } }}
       >
         <Alert
           onClose={handleCloseSnackbar}
           severity={snackbar.severity}
           variant="filled"
-          sx={{ width: "100%", borderRadius: 3, boxShadow: 3, fontWeight: 500 }}
+          sx={{ width: "100%", borderRadius: { xs: 2, sm: 3 }, boxShadow: 3, fontWeight: 500, fontSize: { xs: 13, sm: 14 } }}
         >
           {snackbar.message}
         </Alert>

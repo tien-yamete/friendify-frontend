@@ -27,12 +27,12 @@ export default function CreatePostComposer({ onClick }) {
     <Paper
       elevation={0}
       sx={(t) => ({
-        mb: 3,
-        borderRadius: 4,
+        mb: { xs: 2, sm: 2.5, md: 3 },
+        borderRadius: { xs: 3, sm: 4 },
         bgcolor: "background.paper",
         border: "1px solid",
         borderColor: "divider",
-        p: 2.5,
+        p: { xs: 1.5, sm: 2, md: 2.5 },
         position: "relative",
         overflow: "hidden",
         transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -51,13 +51,13 @@ export default function CreatePostComposer({ onClick }) {
         },
       })}
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, sm: 1.5 }, mb: { xs: 1.5, sm: 2 } }}>
         <Avatar
           src={user?.avatar}
           sx={(t) => ({
-            width: 48,
-            height: 48,
-            border: "3px solid",
+            width: { xs: 40, sm: 44, md: 48 },
+            height: { xs: 40, sm: 44, md: 48 },
+            border: { xs: "2px solid", sm: "3px solid" },
             borderColor: t.palette.mode === "dark"
               ? alpha(t.palette.primary.main, 0.3)
               : alpha(t.palette.primary.main, 0.2),
@@ -68,6 +68,7 @@ export default function CreatePostComposer({ onClick }) {
               ? "0 4px 12px rgba(139, 154, 255, 0.3), inset 0 -2px 4px rgba(0, 0, 0, 0.2)"
               : "0 4px 12px rgba(102, 126, 234, 0.25), inset 0 -2px 4px rgba(0, 0, 0, 0.1)",
             transition: "all 0.3s ease",
+            fontSize: { xs: "1rem", sm: "1.1rem", md: "1.2rem" },
             "&:hover": {
               transform: "scale(1.05)",
               boxShadow: t.palette.mode === "dark"
@@ -86,8 +87,8 @@ export default function CreatePostComposer({ onClick }) {
           sx={{
             cursor: "pointer",
             "& .MuiOutlinedInput-root": {
-              borderRadius: 6,
-              fontSize: 15,
+              borderRadius: { xs: 5, sm: 6 },
+              fontSize: { xs: 14, sm: 15 },
               bgcolor: (t) =>
                 t.palette.mode === "dark"
                   ? alpha(t.palette.common.white, 0.04)
@@ -123,9 +124,9 @@ export default function CreatePostComposer({ onClick }) {
           sx={(t) => ({
             color: "#45bd62",
             borderRadius: 2.5,
-            px: 2,
-            py: 1,
-            gap: 1,
+            px: { xs: 1, sm: 1.5, md: 2 },
+            py: { xs: 0.75, sm: 1 },
+            gap: { xs: 0.5, sm: 1 },
             flex: 1,
             transition: "all 0.2s ease",
             "&:hover": {
@@ -134,7 +135,7 @@ export default function CreatePostComposer({ onClick }) {
             },
           })}
         >
-          <ImageIcon />
+          <ImageIcon sx={{ fontSize: { xs: 20, sm: 22, md: 24 } }} />
           <Box
             component="span"
             sx={{
@@ -152,9 +153,9 @@ export default function CreatePostComposer({ onClick }) {
           sx={(t) => ({
             color: "#f3425f",
             borderRadius: 2.5,
-            px: 2,
-            py: 1,
-            gap: 1,
+            px: { xs: 1, sm: 1.5, md: 2 },
+            py: { xs: 0.75, sm: 1 },
+            gap: { xs: 0.5, sm: 1 },
             flex: 1,
             transition: "all 0.2s ease",
             "&:hover": {
@@ -163,7 +164,7 @@ export default function CreatePostComposer({ onClick }) {
             },
           })}
         >
-          <VideocamIcon />
+          <VideocamIcon sx={{ fontSize: { xs: 20, sm: 22, md: 24 } }} />
           <Box
             component="span"
             sx={{
@@ -181,9 +182,9 @@ export default function CreatePostComposer({ onClick }) {
           sx={(t) => ({
             color: "#f7b928",
             borderRadius: 2.5,
-            px: 2,
-            py: 1,
-            gap: 1,
+            px: { xs: 1, sm: 1.5, md: 2 },
+            py: { xs: 0.75, sm: 1 },
+            gap: { xs: 0.5, sm: 1 },
             flex: 1,
             transition: "all 0.2s ease",
             "&:hover": {
@@ -192,7 +193,7 @@ export default function CreatePostComposer({ onClick }) {
             },
           })}
         >
-          <EmojiEmotionsIcon />
+          <EmojiEmotionsIcon sx={{ fontSize: { xs: 20, sm: 22, md: 24 } }} />
           <Box
             component="span"
             sx={{

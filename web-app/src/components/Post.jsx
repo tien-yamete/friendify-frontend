@@ -125,8 +125,8 @@ const Post = forwardRef((props, ref) => {
       ref={ref}
       elevation={0}
       sx={(t) => ({
-        mb: 3,
-        borderRadius: 5,
+        mb: { xs: 2, sm: 2.5, md: 3 },
+        borderRadius: { xs: 3, sm: 4, md: 5 },
         bgcolor: "background.paper",
         border: "1px solid",
         borderColor: "divider",
@@ -150,8 +150,8 @@ const Post = forwardRef((props, ref) => {
     >
       <Box
         sx={(t) => ({
-          p: 2.5,
-          pb: 2,
+          p: { xs: 1.5, sm: 2, md: 2.5 },
+          pb: { xs: 1.5, sm: 2 },
           position: "relative",
           background: t.palette.mode === "dark"
             ? `linear-gradient(135deg, ${alpha(t.palette.primary.main, 0.08)} 0%, ${alpha(t.palette.primary.main, 0.04)} 100%)`
@@ -175,15 +175,15 @@ const Post = forwardRef((props, ref) => {
               <Avatar
                 src={avatar}
                 sx={(t) => ({
-                  width: 52,
-                  height: 52,
+                  width: { xs: 40, sm: 46, md: 52 },
+                  height: { xs: 40, sm: 46, md: 52 },
                   background: t.palette.mode === "dark"
                     ? "linear-gradient(135deg, #8b9aff 0%, #9775d4 100%)"
                     : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                   color: "#fff",
                   fontWeight: 700,
-                  fontSize: 20,
-                  border: "3px solid",
+                  fontSize: { xs: 16, sm: 18, md: 20 },
+                  border: { xs: "2px solid", sm: "3px solid" },
                   borderColor: "background.paper",
                   boxShadow: t.palette.mode === "dark"
                     ? `0 6px 16px ${alpha(t.palette.primary.main, 0.35)}, inset 0 -2px 4px rgba(0, 0, 0, 0.3)`
@@ -208,11 +208,11 @@ const Post = forwardRef((props, ref) => {
               />
             </Box>
             <Box>
-              <Typography sx={{ fontWeight: 700, fontSize: 16, color: "text.primary" }}>
+              <Typography sx={{ fontWeight: 700, fontSize: { xs: 14, sm: 15, md: 16 }, color: "text.primary" }}>
                 {username}
               </Typography>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
+                <Typography sx={{ fontSize: { xs: 11, sm: 12 }, color: "text.secondary" }}>
                   {created}
                 </Typography>
                 <Box sx={{ width: 3, height: 3, bgcolor: "text.secondary", borderRadius: "50%", opacity: 0.6 }} />
@@ -244,7 +244,7 @@ const Post = forwardRef((props, ref) => {
       </Box>
 
       {/* Content */}
-      <Box sx={{ px: 2.5, pt: 1.5, pb: 2 }}>
+      <Box sx={{ px: { xs: 1.5, sm: 2, md: 2.5 }, pt: { xs: 1, sm: 1.5 }, pb: { xs: 1.5, sm: 2 } }}>
         {isEditing ? (
           <Box>
             <TextField
@@ -313,7 +313,7 @@ const Post = forwardRef((props, ref) => {
         ) : (
           <Typography
             sx={{
-              fontSize: 15,
+              fontSize: { xs: 14, sm: 15 },
               lineHeight: 1.8,
               color: "text.primary",
               whiteSpace: "pre-line",
@@ -402,7 +402,8 @@ const Post = forwardRef((props, ref) => {
             sx={(t) => ({
               color: reaction ? reaction.color : "text.secondary",
               borderRadius: 3,
-              py: 1.5,
+              py: { xs: 1, sm: 1.25, md: 1.5 },
+              px: { xs: 0.5, sm: 1 },
               width: "100%",
               transition: "all .2s",
               "&:hover": {
@@ -418,7 +419,7 @@ const Post = forwardRef((props, ref) => {
                 <Box
                   component="span"
                   sx={{
-                    fontSize: "22px",
+                    fontSize: { xs: "18px", sm: "20px", md: "22px" },
                     animation: "bounce .6s ease",
                     "@keyframes bounce": {
                       "0%,100%": { transform: "translateY(0)" },
@@ -428,12 +429,12 @@ const Post = forwardRef((props, ref) => {
                 >
                   {reaction.emoji}
                 </Box>
-                <Typography sx={{ fontSize: 14, fontWeight: 700 }}>{reaction.label}</Typography>
+                <Typography sx={{ fontSize: { xs: 13, sm: 14 }, fontWeight: 700, display: { xs: 'none', sm: 'block' } }}>{reaction.label}</Typography>
               </Box>
             ) : (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <ThumbUpOutlined sx={{ fontSize: 20 }} />
-                <Typography sx={{ fontSize: 14, fontWeight: 700 }}>Thích</Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.5, sm: 1 } }}>
+                <ThumbUpOutlined sx={{ fontSize: { xs: 18, sm: 20 } }} />
+                <Typography sx={{ fontSize: { xs: 13, sm: 14 }, fontWeight: 700 }}>Thích</Typography>
               </Box>
             )}
           </IconButton>
@@ -494,26 +495,28 @@ const Post = forwardRef((props, ref) => {
           sx={(t) => ({
             color: "text.secondary",
             borderRadius: 3,
-            py: 1.5,
+            py: { xs: 1, sm: 1.25, md: 1.5 },
+            px: { xs: 0.5, sm: 1 },
             flex: 1,
             "&:hover": { bgcolor: t.palette.action.hover, color: "primary.main", transform: "scale(1.02)" },
           })}
         >
-          <ChatBubbleOutline sx={{ fontSize: 20, mr: 1 }} />
-          <Typography sx={{ fontSize: 14, fontWeight: 700 }}>Bình luận</Typography>
+          <ChatBubbleOutline sx={{ fontSize: { xs: 18, sm: 20 }, mr: { xs: 0.5, sm: 1 } }} />
+          <Typography sx={{ fontSize: { xs: 13, sm: 14 }, fontWeight: 700 }}>Bình luận</Typography>
         </IconButton>
 
         <IconButton
           sx={(t) => ({
             color: "text.secondary",
             borderRadius: 3,
-            py: 1.5,
+            py: { xs: 1, sm: 1.25, md: 1.5 },
+            px: { xs: 0.5, sm: 1 },
             flex: 1,
             "&:hover": { bgcolor: t.palette.action.hover, color: "primary.main", transform: "scale(1.02)" },
           })}
         >
-          <Share sx={{ fontSize: 20, mr: 1 }} />
-          <Typography sx={{ fontSize: 14, fontWeight: 700 }}>Chia sẻ</Typography>
+          <Share sx={{ fontSize: { xs: 18, sm: 20 }, mr: { xs: 0.5, sm: 1 } }} />
+          <Typography sx={{ fontSize: { xs: 13, sm: 14 }, fontWeight: 700 }}>Chia sẻ</Typography>
         </IconButton>
       </Box>
 
