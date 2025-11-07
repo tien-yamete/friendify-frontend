@@ -33,11 +33,17 @@ export function ThemeProvider({ children }) {
           mode,
           primary: {
             main: mode === 'light' ? '#667eea' : '#8b9aff',
-            light: mode === 'light' ? '#8b9aff' : '#a8b5ff',
+            light: mode === 'light' ? '#a8b5ff' : '#b4c0ff',
             dark: mode === 'light' ? '#5568d3' : '#667eea',
             gradient: mode === 'light'
               ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
               : 'linear-gradient(135deg, #8b9aff 0%, #9775d4 100%)',
+            vibrant: mode === 'light'
+              ? 'linear-gradient(135deg, #667eea 0%, #f093fb 50%, #764ba2 100%)'
+              : 'linear-gradient(135deg, #8b9aff 0%, #f5b0ff 50%, #9775d4 100%)',
+            glow: mode === 'light'
+              ? 'linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%)'
+              : 'linear-gradient(135deg, rgba(139, 154, 255, 0.2) 0%, rgba(151, 117, 212, 0.2) 100%)',
           },
           secondary: {
             main: mode === 'light' ? '#f093fb' : '#f5b0ff',
@@ -46,6 +52,33 @@ export function ThemeProvider({ children }) {
             gradient: mode === 'light'
               ? 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
               : 'linear-gradient(135deg, #f5b0ff 0%, #ff7a8e 100%)',
+            vibrant: mode === 'light'
+              ? 'linear-gradient(135deg, #f093fb 0%, #667eea 50%, #f5576c 100%)'
+              : 'linear-gradient(135deg, #f5b0ff 0%, #8b9aff 50%, #ff7a8e 100%)',
+          },
+          success: {
+            main: mode === 'light' ? '#10b981' : '#34d399',
+            gradient: mode === 'light'
+              ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+              : 'linear-gradient(135deg, #34d399 0%, #10b981 100%)',
+          },
+          warning: {
+            main: mode === 'light' ? '#f59e0b' : '#fbbf24',
+            gradient: mode === 'light'
+              ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
+              : 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+          },
+          error: {
+            main: mode === 'light' ? '#ef4444' : '#f87171',
+            gradient: mode === 'light'
+              ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+              : 'linear-gradient(135deg, #f87171 0%, #ef4444 100%)',
+          },
+          info: {
+            main: mode === 'light' ? '#3b82f6' : '#60a5fa',
+            gradient: mode === 'light'
+              ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
+              : 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)',
           },
           background: {
             default: mode === 'light' ? '#f5f7fa' : '#0f1419',
@@ -53,6 +86,12 @@ export function ThemeProvider({ children }) {
             gradient: mode === 'light'
               ? 'linear-gradient(180deg, #f5f7fa 0%, #e3e8f0 100%)'
               : 'linear-gradient(180deg, #0f1419 0%, #1a1d26 100%)',
+            vibrant: mode === 'light'
+              ? 'linear-gradient(135deg, #f5f7fa 0%, #e3e8f0 50%, #d3dae8 100%)'
+              : 'linear-gradient(135deg, #0f1419 0%, #1a1d26 50%, #252931 100%)',
+            shimmer: mode === 'light'
+              ? 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(240, 147, 251, 0.05) 50%, rgba(102, 126, 234, 0.05) 100%)'
+              : 'linear-gradient(135deg, rgba(139, 154, 255, 0.08) 0%, rgba(245, 176, 255, 0.08) 50%, rgba(139, 154, 255, 0.08) 100%)',
           },
           divider: mode === 'light' ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.08)',
           glass: {
@@ -65,6 +104,16 @@ export function ThemeProvider({ children }) {
             dark: mode === 'light'
               ? 'rgba(255, 255, 255, 0.95)'
               : 'rgba(28, 30, 36, 0.95)',
+            blur: 'blur(20px)',
+          },
+          accent: {
+            purple: mode === 'light' ? '#a855f7' : '#c084fc',
+            pink: mode === 'light' ? '#ec4899' : '#f472b6',
+            cyan: mode === 'light' ? '#06b6d4' : '#22d3ee',
+            orange: mode === 'light' ? '#f97316' : '#fb923c',
+            gradient: mode === 'light'
+              ? 'linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #06b6d4 100%)'
+              : 'linear-gradient(135deg, #c084fc 0%, #f472b6 50%, #22d3ee 100%)',
           },
         },
         shape: {
@@ -156,9 +205,12 @@ export function ThemeProvider({ children }) {
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 '&:hover': {
                   boxShadow: mode === 'light'
-                    ? '0 4px 12px rgba(0, 0, 0, 0.12)'
-                    : '0 4px 12px rgba(0, 0, 0, 0.4)',
+                    ? '0 6px 16px rgba(102, 126, 234, 0.25), 0 2px 8px rgba(0, 0, 0, 0.08)'
+                    : '0 6px 16px rgba(139, 154, 255, 0.3), 0 2px 8px rgba(0, 0, 0, 0.4)',
                   transform: 'translateY(-2px)',
+                },
+                '&:active': {
+                  transform: 'translateY(0px)',
                 },
               },
               contained: {
@@ -209,6 +261,33 @@ export function ThemeProvider({ children }) {
                 boxShadow: mode === 'light'
                   ? '0 2px 8px rgba(0, 0, 0, 0.1)'
                   : '0 2px 8px rgba(0, 0, 0, 0.4)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              },
+            },
+          },
+          MuiChip: {
+            styleOverrides: {
+              root: {
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: mode === 'light'
+                    ? '0 4px 12px rgba(0, 0, 0, 0.1)'
+                    : '0 4px 12px rgba(0, 0, 0, 0.3)',
+                },
+              },
+            },
+          },
+          MuiIconButton: {
+            styleOverrides: {
+              root: {
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': {
+                  transform: 'scale(1.08)',
+                },
+                '&:active': {
+                  transform: 'scale(0.95)',
+                },
               },
             },
           },

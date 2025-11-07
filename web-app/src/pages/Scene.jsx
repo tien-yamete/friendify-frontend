@@ -1,10 +1,7 @@
-// src/pages/Scene.jsx  (CHỈNH SỬA)
 import * as React from "react";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
-import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
 import Toolbar from "@mui/material/Toolbar";
 import { alpha, useTheme } from "@mui/material/styles";
 import Header from "../components/Header";
@@ -40,6 +37,18 @@ function Scene({ children }) {
         height: "100vh",
         overflow: "hidden",
         position: "relative",
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          inset: 0,
+          background: theme.palette.mode === "dark"
+            ? `radial-gradient(circle at 15% 25%, ${alpha(theme.palette.primary.main, 0.08)} 0%, transparent 50%),
+               radial-gradient(circle at 85% 75%, ${alpha(theme.palette.secondary.main, 0.08)} 0%, transparent 50%)`
+            : `radial-gradient(circle at 15% 25%, ${alpha(theme.palette.primary.main, 0.04)} 0%, transparent 50%),
+               radial-gradient(circle at 85% 75%, ${alpha(theme.palette.secondary.main, 0.04)} 0%, transparent 50%)`,
+          pointerEvents: "none",
+          zIndex: 0,
+        },
       }}
     >
       <AppBar
@@ -57,8 +66,9 @@ function Scene({ children }) {
           borderColor: "divider",
           color: "inherit",
           boxShadow: theme.palette.mode === "dark"
-            ? "0 4px 24px rgba(0, 0, 0, 0.4)"
-            : "0 4px 24px rgba(0, 0, 0, 0.08)",
+            ? `0 4px 24px rgba(0, 0, 0, 0.4), 0 1px 0 ${alpha(theme.palette.primary.main, 0.1)}`
+            : `0 4px 24px rgba(0, 0, 0, 0.08), 0 1px 0 ${alpha(theme.palette.primary.main, 0.05)}`,
+          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         }}
       >
         <Toolbar sx={{ minHeight: 64 }}>
@@ -70,7 +80,7 @@ function Scene({ children }) {
         </Toolbar>
       </AppBar>
 
-      <Box sx={{ display: "flex", flexDirection: "row", flex: "1 1 auto", minHeight: 0 }}>
+      <Box sx={{ display: "flex", flexDirection: "row", flex: "1 1 auto", minHeight: 0, position: "relative", zIndex: 1 }}>
         <Box component="nav" sx={{ width: { lg: drawerWidth }, flexShrink: { lg: 0 } }} aria-label="side menu">
           <Drawer
             variant="temporary"
@@ -89,6 +99,9 @@ function Scene({ children }) {
                 boxShadow: theme.palette.mode === "dark"
                   ? "4px 0 24px rgba(0, 0, 0, 0.5)"
                   : "4px 0 24px rgba(0, 0, 0, 0.1)",
+                backgroundImage: theme.palette.mode === "dark"
+                  ? `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(theme.palette.background.paper, 1)} 100%)`
+                  : `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(theme.palette.background.paper, 1)} 100%)`,
               },
             }}
           >
@@ -106,11 +119,14 @@ function Scene({ children }) {
                 borderRight: "1px solid",
                 borderColor: "divider",
                 backgroundImage: theme.palette.mode === "dark"
-                  ? "linear-gradient(180deg, rgba(28, 30, 36, 0.95) 0%, rgba(28, 30, 36, 1) 100%)"
-                  : "linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 1) 100%)",
+                  ? `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 1)} 100%),
+                     radial-gradient(circle at 50% 0%, ${alpha(theme.palette.primary.main, 0.05)} 0%, transparent 70%)`
+                  : `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 1)} 100%),
+                     radial-gradient(circle at 50% 0%, ${alpha(theme.palette.primary.main, 0.025)} 0%, transparent 70%)`,
                 boxShadow: theme.palette.mode === "dark"
-                  ? "4px 0 24px rgba(0, 0, 0, 0.3)"
-                  : "4px 0 24px rgba(0, 0, 0, 0.05)",
+                  ? `4px 0 24px rgba(0, 0, 0, 0.3), inset -1px 0 0 ${alpha(theme.palette.primary.main, 0.08)}`
+                  : `4px 0 24px rgba(0, 0, 0, 0.05), inset -1px 0 0 ${alpha(theme.palette.primary.main, 0.04)}`,
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
               },
             }}
             open
@@ -145,6 +161,24 @@ function Scene({ children }) {
               overflowY: "auto",
               overflowX: "hidden",
               position: "relative",
+              "&::-webkit-scrollbar": {
+                width: "8px",
+              },
+              "&::-webkit-scrollbar-track": {
+                background: "transparent",
+              },
+              "&::-webkit-scrollbar-thumb": {
+                background: theme.palette.mode === "dark"
+                  ? alpha(theme.palette.primary.main, 0.3)
+                  : alpha(theme.palette.primary.main, 0.2),
+                borderRadius: "4px",
+                transition: "background 0.3s ease",
+                "&:hover": {
+                  background: theme.palette.mode === "dark"
+                    ? alpha(theme.palette.primary.main, 0.5)
+                    : alpha(theme.palette.primary.main, 0.35),
+                },
+              },
             }}
           >
             {children}
