@@ -55,7 +55,9 @@ function PageLayout({ children }) {
         position="fixed"
         elevation={0}
         sx={{
-          ml: { lg: `${drawerWidth}px` },
+          width: "100%",
+          left: 0,
+          right: 0,
           zIndex: theme.zIndex.drawer + 1,
           bgcolor:
             theme.palette.mode === "dark"
@@ -118,6 +120,8 @@ function PageLayout({ children }) {
                 bgcolor: "background.paper",
                 borderRight: "1px solid",
                 borderColor: "divider",
+                top: "64px",
+                height: "calc(100vh - 64px)",
                 backgroundImage: theme.palette.mode === "dark"
                   ? `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 1)} 100%),
                      radial-gradient(circle at 50% 0%, ${alpha(theme.palette.primary.main, 0.05)} 0%, transparent 70%)`
@@ -142,6 +146,7 @@ function PageLayout({ children }) {
             display: "flex",
             flexDirection: "column",
             width: { lg: `calc(100% - ${drawerWidth}px)` },
+            ml: { lg: `${drawerWidth}px` },
             minHeight: 0,
             position: "relative",
           }}

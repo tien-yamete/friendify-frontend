@@ -465,8 +465,7 @@ export default function Header({
           </Popper>
         </Box>
 
-
-        <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1.5 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, ml: "auto" }}>
           {isAuthenticated() ? (
             <>
               <Tooltip title="Notifications" arrow placement="bottom">
@@ -484,6 +483,7 @@ export default function Header({
                         : alpha(t.palette.common.black, 0.05),
                       transform: "scale(1.1)",
                     },
+                    display: { xs: 'none', md: 'inline-flex' },
                   })}
                 >
                   <Badge 
@@ -526,6 +526,7 @@ export default function Header({
                       borderColor: t.palette.primary.main,
                       boxShadow: `0 0 0 3px ${alpha(t.palette.primary.main, 0.1)}`,
                     },
+                    display: { xs: 'none', md: 'inline-flex' },
                   })}
                 >
                   <Avatar 

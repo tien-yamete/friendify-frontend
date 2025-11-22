@@ -7,7 +7,6 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Toolbar from "@mui/material/Toolbar";
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
 import HomeIcon from "@mui/icons-material/Home";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
@@ -93,57 +92,6 @@ function SideMenu({ onNavigate }) {
   return (
     <>
       <Toolbar />
-      <Box
-        sx={{
-          px: 2,
-          py: 3,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 1.5,
-          mb: 2,
-        }}
-      >
-        <Box
-          component="img"
-          src="/src/assets/icons/logo.png"
-          alt="Friendify Logo"
-          onError={(e) => {
-            e.target.style.display = "none";
-          }}
-          sx={{
-            width: 56,
-            height: 56,
-            borderRadius: 2.5,
-            boxShadow: (t) => t.palette.mode === "dark"
-              ? "0 4px 16px rgba(138, 43, 226, 0.3)"
-              : "0 4px 16px rgba(138, 43, 226, 0.2)",
-            transition: "all 0.3s ease",
-            "&:hover": {
-              transform: "scale(1.05)",
-              boxShadow: (t) => t.palette.mode === "dark"
-                ? "0 6px 20px rgba(138, 43, 226, 0.4)"
-                : "0 6px 20px rgba(138, 43, 226, 0.3)",
-            },
-          }}
-        />
-        <Typography
-          variant="h6"
-          sx={{
-            fontWeight: 800,
-            fontSize: "1.25rem",
-            background: (t) => t.palette.mode === "dark"
-              ? "linear-gradient(135deg, #fff 0%, #e0e0e0 100%)"
-              : "linear-gradient(135deg, #8a2be2 0%, #4a00e0 100%)",
-            backgroundClip: "text",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            letterSpacing: "-0.02em",
-          }}
-        >
-          Friendify
-        </Typography>
-      </Box>
       <Divider sx={{ mx: 2, mb: 1 }} />
       <List sx={{ px: 1.5, py: 1 }}>
         {menuItems.map((item) => {
