@@ -27,12 +27,12 @@ import SparklesIcon from "@mui/icons-material/AutoAwesome";
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { registerAccount, loginWithGoogle } from "../services/identityService";
-import LoginLeftPanel from "../components/LoginLeftPanel";
+import LoginPanel from "../components/LoginPanel";
 import { useColorMode } from "../contexts/ThemeContext";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
 
-export default function Register() {
+export default function RegisterPage() {
   const navigate = useNavigate();
   const { mode, toggleColorMode } = useColorMode();
   const [username, setUsername] = useState("");
@@ -167,7 +167,7 @@ export default function Register() {
         }}
       />
 
-      <LoginLeftPanel variant="register" />
+      <LoginPanel variant="register" />
 
       <Box
         className="register-form-container"

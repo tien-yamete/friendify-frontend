@@ -37,7 +37,7 @@ import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import SettingsIcon from "@mui/icons-material/Settings";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import Scene from "./Scene";
+import PageLayout from "./PageLayout";
 
 // Dữ liệu giả
 const mockMyGroups = [
@@ -193,7 +193,7 @@ const mockDiscoverGroups = [
   },
 ];
 
-export default function Groups() {
+export default function GroupPage() {
   const [tabValue, setTabValue] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [myGroups, setMyGroups] = useState(mockMyGroups);
@@ -267,7 +267,7 @@ export default function Groups() {
   );
 
   return (
-    <Scene>
+    <PageLayout>
       <Box
         sx={{
           width: "100%",
@@ -960,6 +960,6 @@ export default function Groups() {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Scene>
+    </PageLayout>
   );
 }

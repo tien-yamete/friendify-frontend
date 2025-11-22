@@ -19,7 +19,7 @@ import LinkIcon from "@mui/icons-material/Link";
 import ArticleIcon from "@mui/icons-material/Article";
 import ImageIcon from "@mui/icons-material/Image";
 import VideoLibraryIcon from "@mui/icons-material/VideoLibrary";
-import Scene from "./Scene";
+import PageLayout from "./PageLayout";
 
 const SAVED_ITEMS = [
   {
@@ -80,7 +80,7 @@ const SAVED_ITEMS = [
 
 const CATEGORIES = ["Tất cả", "Thiết kế", "Lập trình", "Năng suất", "AI", "Kinh doanh"];
 
-export default function Saved() {
+export default function SavedPage() {
   const [activeTab, setActiveTab] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState("Tất cả");
   const [items, setItems] = useState(SAVED_ITEMS);
@@ -119,7 +119,7 @@ export default function Saved() {
   });
 
   return (
-    <Scene>
+    <PageLayout>
       <Box sx={{ width: "100%", maxWidth: 1200, mx: "auto", px: 2 }}>
         {/* Header */}
         <Paper
@@ -363,6 +363,6 @@ export default function Saved() {
           </Paper>
         )}
       </Box>
-    </Scene>
+    </PageLayout>
   );
 }

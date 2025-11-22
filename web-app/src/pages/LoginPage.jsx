@@ -26,12 +26,12 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { logIn, isAuthenticated, loginWithGoogle } from "../services/identityService";
 import { useUser } from "../contexts/UserContext";
-import LoginLeftPanel from "../components/LoginLeftPanel";
+import LoginPanel from "../components/LoginPanel";
 import { useColorMode } from "../contexts/ThemeContext";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
 
-export default function Login() {
+export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { mode, toggleColorMode } = useColorMode();
@@ -177,7 +177,7 @@ export default function Login() {
         }}
       />
 
-      <LoginLeftPanel variant="login" />
+      <LoginPanel variant="login" />
       <Box
         className="login-form-container"
         sx={{

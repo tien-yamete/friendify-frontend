@@ -58,7 +58,7 @@ const NotificationSkeleton = () => (
   </Box>
 );
 
-export default function NotificationsPopover({ open, anchorEl, onClose }) {
+export default function NotificationPopover({ open, anchorEl, onClose }) {
   const [notifications, setNotifications] = React.useState(ALL_NOTIFICATIONS);
   const [displayedNotifications, setDisplayedNotifications] = React.useState([]);
   const [after, setAfter] = React.useState(0);

@@ -36,9 +36,9 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import SecurityIcon from "@mui/icons-material/Security";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
-import Scene from "./Scene";
+import PageLayout from "./PageLayout";
 
-export default function Settings() {
+export default function SettingsPage() {
   const [tabValue, setTabValue] = useState(0);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -143,7 +143,7 @@ export default function Settings() {
   };
 
   return (
-    <Scene>
+    <PageLayout>
       <Box
         sx={{
           width: "100%",
@@ -889,6 +889,6 @@ export default function Settings() {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Scene>
+    </PageLayout>
   );
 }

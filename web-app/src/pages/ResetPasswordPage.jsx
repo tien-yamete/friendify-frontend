@@ -17,7 +17,7 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { resetPassword } from "../services/identityService";
 
-export default function ResetPassword() {
+export default function ResetPasswordPage() {
   const { token } = useParams();
   const navigate = useNavigate();
 

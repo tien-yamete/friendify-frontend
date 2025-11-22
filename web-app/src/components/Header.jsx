@@ -23,7 +23,7 @@ import PeopleIcon from "@mui/icons-material/People";
 import ChatBubbleIcon from "@mui/icons-material/ChatBubble";
 import { isAuthenticated, logOut } from "../services/identityService";
 import { useUser } from "../contexts/UserContext";
-import NotificationsPopover from "./NotificationsPopover";
+import NotificationPopover from "./NotificationPopover";
 
 const SEARCH_SUGGESTIONS = [
   { id: 1, type: "user", name: "Sarah Johnson", avatar: "https://i.pravatar.cc/150?img=1" },
@@ -558,7 +558,7 @@ export default function Header({
 
       {MobileMenu}
       {ProfileCardMenu}
-      <NotificationsPopover
+      <NotificationPopover
         open={isNotificationOpen}
         anchorEl={notificationAnchor}
         onClose={handleNotificationClose}

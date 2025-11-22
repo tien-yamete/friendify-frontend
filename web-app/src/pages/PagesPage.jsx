@@ -19,7 +19,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import FavoriteIcon from "@mui/icons-material/Favorite";
-import Scene from "./Scene";
+import PageLayout from "./PageLayout";
 
 const PAGES_DATA = [
   {
@@ -105,7 +105,7 @@ const SUGGESTED_PAGES = [
   },
 ];
 
-export default function Pages() {
+export default function PagesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState(0);
   const [pages, setPages] = useState(PAGES_DATA);
@@ -131,7 +131,7 @@ export default function Pages() {
         );
 
   return (
-    <Scene>
+    <PageLayout>
       <Box sx={{ width: "100%", maxWidth: 1200, mx: "auto", px: 2 }}>
         {/* Header */}
         <Paper
@@ -412,6 +412,6 @@ export default function Pages() {
           </Paper>
         )}
       </Box>
-    </Scene>
+    </PageLayout>
   );
 }

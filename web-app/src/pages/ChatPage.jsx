@@ -42,8 +42,8 @@ import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PersonIcon from "@mui/icons-material/Person";
-import Scene from "./Scene";
-import NewChatPopover from "../components/NewChatPopover";
+import PageLayout from "./PageLayout";
+import CreateChatPopover from "../components/CreateChatPopover";
 import { 
   getConversations, 
   getMessagesPaginated, 
@@ -99,7 +99,7 @@ const normalizeMessage = (item, currentUserId) => {
 
 
 // ---------- Component ----------
-export default function Chat() {
+export default function ChatPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
@@ -163,7 +163,7 @@ export default function Chat() {
     setNewChatAnchorEl(null);
   };
 
-  // When user chooses from NewChatPopover: create or select conversation
+  // When user chooses from CreateChatPopover: create or select conversation
   const handleSelectNewChatUser = async (selectedUser) => {
     // normalized { userId, displayName, avatar }
     const exists = conversations.find((c) => 
@@ -943,7 +943,7 @@ export default function Chat() {
     : 'calc(100vh - 64px)'; // only subtract header
 
   return (
-    <Scene>
+    <PageLayout>
       <Card
         sx={{
           width: "100%",
@@ -992,7 +992,7 @@ export default function Chat() {
             >
               <AddIcon fontSize="small" />
             </IconButton>
-            <NewChatPopover
+            <CreateChatPopover
               anchorEl={newChatAnchorEl}
               open={Boolean(newChatAnchorEl)}
               onClose={handleCloseNewChat}
@@ -1581,6 +1581,6 @@ export default function Chat() {
           <Button onClick={handleConversationInfoClose}>Close</Button>
         </DialogActions>
       </Dialog>
-    </Scene>
+    </PageLayout>
   );
 }

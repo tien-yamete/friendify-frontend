@@ -50,9 +50,9 @@ import { getMyPosts, getUserPosts, updatePost, deletePost } from "../services/po
 import { getApiUrl, API_ENDPOINTS } from "../config/apiConfig";
 import { getToken } from "../services/localStorageService";
 import Post from "../components/Post";
-import Scene from "./Scene";
+import PageLayout from "./PageLayout";
 
-export default function ProfileEnhanced() {
+export default function ProfileEnhancedPage() {
   const navigate = useNavigate();
   const { id: profileUserId } = useParams(); // Get userId from route params
   const { user: currentUser, loadUser } = useUser();
@@ -667,18 +667,18 @@ export default function ProfileEnhanced() {
 
   if (!userDetails) {
     return (
-      <Scene>
+      <PageLayout>
         <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
           <CircularProgress size={50} />
         </Box>
-      </Scene>
+      </PageLayout>
     );
   }
 
   const isOwnProfile = !profileUserId || (currentUser && profileUserId === currentUser.id);
 
   return (
-    <Scene>
+    <PageLayout>
       <Box sx={{ width: "100%", maxWidth: 1200, mx: "auto", pb: 4, pt: { xs: 0, sm: 2 } }}>
         {/* Cover Photo Section */}
         <Paper
@@ -1976,6 +1976,6 @@ export default function ProfileEnhanced() {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Scene>
+    </PageLayout>
   );
 }

@@ -14,7 +14,7 @@ import LockResetIcon from "@mui/icons-material/LockReset";
 import { useState } from "react";
 import { requestPasswordReset } from "../services/identityService";
 
-export default function ForgotPassword() {
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [snack, setSnack] = useState({
     open: false,

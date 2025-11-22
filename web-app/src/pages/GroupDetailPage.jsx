@@ -44,7 +44,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ReportIcon from "@mui/icons-material/Report";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import Scene from "./Scene";
+import PageLayout from "./PageLayout";
 
 // Dữ liệu giả
 const mockGroupData = {
@@ -123,7 +123,7 @@ const mockPosts = [
   },
 ];
 
-export default function GroupDetail() {
+export default function GroupDetailPage() {
   const { groupId } = useParams();
   const [tabValue, setTabValue] = useState(0);
   const [group] = useState(mockGroupData);
@@ -243,7 +243,7 @@ export default function GroupDetail() {
   };
 
   return (
-    <Scene>
+    <PageLayout>
       <Box
         sx={{
           width: "100%",
@@ -1089,6 +1089,6 @@ export default function GroupDetail() {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Scene>
+    </PageLayout>
   );
 }

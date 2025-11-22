@@ -11,7 +11,7 @@ import { useColorMode } from "../contexts/ThemeContext";
 
 const drawerWidth = 300;
 
-function Scene({ children }) {
+function PageLayout({ children }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [isClosing, setIsClosing] = React.useState(false);
   const theme = useTheme();
@@ -191,4 +191,4 @@ function Scene({ children }) {
   );
 }
 
-export default Scene;
+export default PageLayout;

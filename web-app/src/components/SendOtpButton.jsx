@@ -4,7 +4,7 @@ import { Button, Snackbar, Alert, Box, Typography } from "@mui/material";
 
 const COOLDOWN_SEC = 60;
 
-export default function ResendOtpButton({ email }) {
+export default function SendOtpButton({ email }) {
   const [cooldown, setCooldown] = useState(0);
   const [snack, setSnack] = useState({ open: false, message: "", severity: "success" });
   const timerRef = useRef(null);

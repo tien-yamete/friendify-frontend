@@ -9,7 +9,7 @@ import PeopleIcon from "@mui/icons-material/People";
 import ShareIcon from "@mui/icons-material/Share";
 import { useColorMode } from "../contexts/ThemeContext";
 
-export default function LoginLeftPanel({ variant = "login" }) {
+export default function LoginPanel({ variant = "login" }) {
   const { mode } = useColorMode();
   const isDark = mode === "dark";
   const images = [bg1, bg2, bg3];

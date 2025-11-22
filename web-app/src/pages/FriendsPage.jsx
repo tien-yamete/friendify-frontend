@@ -27,7 +27,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import PeopleIcon from "@mui/icons-material/People";
 import PersonIcon from "@mui/icons-material/Person";
 import { alpha } from "@mui/material/styles";
-import Scene from "./Scene";
+import PageLayout from "./PageLayout";
 import {
   getFriendRequests,
   getAllFriends,
@@ -46,7 +46,7 @@ import {
   normalizeFriendData 
 } from "../utils/friendHelpers";
 
-export default function Friends() {
+export default function FriendsPage() {
   const navigate = useNavigate();
   const [tabValue, setTabValue] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
@@ -489,7 +489,7 @@ export default function Friends() {
     });
 
   return (
-    <Scene>
+    <PageLayout>
       <Box sx={{ display: "flex", justifyContent: "center", width: "100%", mt: 4, px: 2 }}>
         <Box sx={{ width: "100%", maxWidth: 1200 }}>
           {/* Header */}
@@ -1274,6 +1274,6 @@ export default function Friends() {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Scene>
+    </PageLayout>
   );
 }

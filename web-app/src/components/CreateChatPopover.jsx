@@ -1,4 +1,4 @@
-// src/components/NewChatPopover.jsx
+// src/components/CreateChatPopover.jsx
 import React, { useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 import {
@@ -23,7 +23,7 @@ import { apiFetch } from "../services/apiHelper";
 import { API_ENDPOINTS } from "../config/apiConfig";
 import { extractArrayFromResponse } from "../utils/apiHelper";
 
-const NewChatPopover = ({ anchorEl, open, onClose, onSelectUser }) => {
+const CreateChatPopover = ({ anchorEl, open, onClose, onSelectUser }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
 
@@ -320,11 +320,11 @@ const NewChatPopover = ({ anchorEl, open, onClose, onSelectUser }) => {
   );
 };
 
-NewChatPopover.propTypes = {
+CreateChatPopover.propTypes = {
   anchorEl: PropTypes.object,
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   onSelectUser: PropTypes.func.isRequired,
 };
 
-export default NewChatPopover;
+export default CreateChatPopover;

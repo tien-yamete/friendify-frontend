@@ -18,12 +18,12 @@ import { getApiUrl, API_ENDPOINTS } from "../config/apiConfig";
 import { getToken } from "../services/localStorageService";
 import { extractArrayFromResponse } from "../utils/apiHelper";
 import { getUserProfileById } from "../services/userService";
-import Scene from "./Scene";
+import PageLayout from "./PageLayout";
 import Post from "../components/Post";
 import RightSidebar from "../components/RightSidebar";
 import MediaUpload from "../components/MediaUpload";
 
-export default function Home() {
+export default function HomePage() {
   const { user } = useUser();
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(1);
@@ -420,7 +420,7 @@ export default function Home() {
   };
 
   return (
-    <Scene>
+    <PageLayout>
       <Box
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setEnableCursorTracking(true)}
@@ -1226,6 +1226,6 @@ export default function Home() {
           {snackbarMessage}
         </Alert>
       </Snackbar>
-    </Scene>
+    </PageLayout>
   );
 }
