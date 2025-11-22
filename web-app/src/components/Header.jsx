@@ -17,10 +17,6 @@ import WbSunnyOutlined from "@mui/icons-material/WbSunnyOutlined";
 import DarkModeOutlined from "@mui/icons-material/DarkModeOutlined";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import HistoryIcon from "@mui/icons-material/History";
-import HomeIcon from "@mui/icons-material/Home";
-import GroupsIcon from "@mui/icons-material/Groups";
-import PeopleIcon from "@mui/icons-material/People";
-import ChatBubbleIcon from "@mui/icons-material/ChatBubble";
 import { isAuthenticated, logOut } from "../services/identityService";
 import { useUser } from "../contexts/UserContext";
 import NotificationPopover from "./NotificationPopover";
@@ -34,13 +30,6 @@ const SEARCH_SUGGESTIONS = [
 ];
 
 
-const NAV_TABS = [
-  { label: "Home", value: "/", icon: HomeIcon },
-  { label: "Group", value: "/groups", icon: GroupsIcon },
-  { label: "Friends", value: "/friends", icon: PeopleIcon },
-  { label: "Messages", value: "/chat", icon: ChatBubbleIcon },
-];
-
 const CompactSearch = styled("div")(({ theme }) => {
   const isDark = theme.palette.mode === "dark";
   const baseBg = isDark ? alpha(theme.palette.common.white, 0.08) : alpha(theme.palette.common.black, 0.04);
@@ -48,16 +37,25 @@ const CompactSearch = styled("div")(({ theme }) => {
   const focusBg = isDark ? alpha(theme.palette.common.white, 0.16) : alpha(theme.palette.common.black, 0.08);
   return {
     position: "relative",
-    borderRadius: 20,
+    borderRadius: 24,
     backgroundColor: baseBg,
-    border: `1px solid ${theme.palette.divider}`,
-    transition: "all .2s ease",
-    "&:hover": { backgroundColor: hoverBg },
+    border: `1px solid ${isDark ? alpha(theme.palette.common.white, 0.1) : alpha(theme.palette.common.black, 0.08)}`,
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    "&:hover": { 
+      backgroundColor: hoverBg,
+      borderColor: isDark ? alpha(theme.palette.common.white, 0.15) : alpha(theme.palette.common.black, 0.12),
+      transform: "translateY(-1px)",
+      boxShadow: isDark
+        ? "0 4px 12px rgba(0, 0, 0, 0.2)"
+        : "0 4px 12px rgba(0, 0, 0, 0.08)",
+    },
     "&:focus-within": {
       backgroundColor: focusBg,
-      borderColor: alpha(theme.palette.primary.main, 0.5),
+      borderColor: alpha(theme.palette.primary.main, 0.6),
+      boxShadow: `0 0 0 3px ${alpha(theme.palette.primary.main, 0.1)}`,
+      transform: "translateY(-1px)",
     },
-    width: 240,
+    width: 280,
     [theme.breakpoints.down("md")]: { width: "100%", flex: 1 },
   };
 });
@@ -79,35 +77,6 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
     padding: theme.spacing(0.875, 1, 0.875, 0),
     paddingLeft: `calc(1em + ${theme.spacing(3)})`,
     fontSize: 14,
-  },
-}));
-
-const NavTabLink = styled(Link)(({ theme, active }) => ({
-  position: "relative",
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  borderRadius: 8,
-  padding: theme.spacing(1.5, 3),
-  color: active ? theme.palette.primary.main : theme.palette.text.secondary,
-  textDecoration: "none",
-  transition: "all .2s ease",
-  "&:hover": {
-    backgroundColor: alpha(theme.palette.action.hover, 0.6),
-  },
-  "&::after": active ? {
-    content: '""',
-    position: "absolute",
-    bottom: 0,
-    left: "50%",
-    transform: "translateX(-50%)",
-    width: 48,
-    height: 2,
-    backgroundColor: theme.palette.primary.main,
-    borderRadius: "2px 2px 0 0",
-  } : {},
-  [theme.breakpoints.down("md")]: {
-    padding: theme.spacing(1.5, 2),
   },
 }));
 
@@ -139,8 +108,6 @@ export default function Header({
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
   const isSearchOpen = Boolean(searchAnchor) && searchQuery.trim().length > 0;
   const isNotificationOpen = Boolean(notificationAnchor);
-
-  const currentTab = NAV_TABS.find(tab => tab.value === location.pathname)?.value || false;
 
   const handleProfileMenuOpen = (e) => setAnchorEl(e.currentTarget);
   const handleMobileMenuOpen = (e) => setMobileMoreAnchorEl(e.currentTarget);
@@ -323,16 +290,32 @@ export default function Header({
         ml: "calc(50% - 50vw)",
         mr: "calc(50% - 50vw)",
         bgcolor: t.palette.mode === "dark"
-          ? alpha(t.palette.grey[900], 0.85)
-          : alpha(t.palette.background.paper, 0.9),
-        backdropFilter: "saturate(180%) blur(10px)",
-        borderBottom: "1px solid",
-        borderColor: "divider",
-        boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+          ? alpha(t.palette.grey[900], 0.9)
+          : alpha(t.palette.background.paper, 0.95),
+        backdropFilter: "saturate(180%) blur(20px)",
+        WebkitBackdropFilter: "saturate(180%) blur(20px)",
+        borderBottom: `1px solid ${t.palette.mode === "dark" 
+          ? alpha(t.palette.common.white, 0.08) 
+          : alpha(t.palette.common.black, 0.06)}`,
+        boxShadow: t.palette.mode === "dark"
+          ? "0 4px 24px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(138, 43, 226, 0.1)"
+          : "0 4px 24px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(138, 43, 226, 0.05)",
         zIndex: t.zIndex.appBar,
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "1px",
+          background: t.palette.mode === "dark"
+            ? "linear-gradient(90deg, transparent, rgba(138, 43, 226, 0.3), transparent)"
+            : "linear-gradient(90deg, transparent, rgba(138, 43, 226, 0.2), transparent)",
+        },
       })}
     >
-      <Toolbar sx={{ minHeight: "60px !important", height: 60, px: { xs: 1.5, md: 3 }, gap: { xs: 1, md: 2 } }}>
+      <Toolbar sx={{ minHeight: "64px !important", height: 64, px: { xs: 2, md: 3 }, gap: { xs: 1.5, md: 2.5 } }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, md: 2 }, flex: { xs: 1, md: 'initial' } }}>
           <IconButton
             size="medium"
@@ -340,12 +323,19 @@ export default function Header({
             color="inherit"
             aria-label="open menu"
             onClick={onMenuClick}
-            sx={{
-              p: 0.5,
-              "&:hover": { backgroundColor: "action.hover" },
+            sx={(t) => ({
+              p: 1,
+              borderRadius: 2,
+              transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+              "&:hover": { 
+                backgroundColor: t.palette.mode === "dark"
+                  ? alpha(t.palette.common.white, 0.1)
+                  : alpha(t.palette.common.black, 0.05),
+                transform: "scale(1.05)",
+              },
               display: { xs: 'inline-flex', lg: 'none' },
               mr: { xs: 0.5, sm: 1 }
-            }}
+            })}
           >
             <MenuIcon />
           </IconButton>
@@ -356,9 +346,36 @@ export default function Header({
             color="inherit"
             aria-label="logo"
             onClick={() => navigate("/")}
-            sx={{ p: 0.5, "&:hover": { backgroundColor: "action.hover" }, display: { xs: 'none', sm: 'inline-flex' } }}
+            sx={(t) => ({
+              p: 0.75,
+              borderRadius: 2.5,
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+              "&:hover": {
+                backgroundColor: t.palette.mode === "dark"
+                  ? alpha(t.palette.common.white, 0.08)
+                  : alpha(t.palette.common.black, 0.04),
+                transform: "translateY(-2px) scale(1.05)",
+              },
+              display: { xs: 'none', sm: 'inline-flex' },
+            })}
           >
-            <Box component="img" src="/src/assets/icons/logo.png" alt="logo" sx={{ width: 36, height: 36, borderRadius: 1 }} />
+            <Box
+              component="img"
+              src="/src/assets/icons/logo.png"
+              alt="Friendify Logo"
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
+              sx={{
+                width: { xs: 40, sm: 44 },
+                height: { xs: 40, sm: 44 },
+                borderRadius: 2,
+                boxShadow: (t) => t.palette.mode === "dark"
+                  ? "0 4px 12px rgba(138, 43, 226, 0.3)"
+                  : "0 4px 12px rgba(138, 43, 226, 0.2)",
+                transition: "all 0.3s ease",
+              }}
+            />
           </IconButton>
 
           <CompactSearch ref={searchRef}>
@@ -448,25 +465,8 @@ export default function Header({
           </Popper>
         </Box>
 
-        <Box sx={{ display: { xs: "none", md: "flex" }, flex: 1, justifyContent: "center", gap: { xs: 1, md: 2 } }}>
-          {isAuthenticated() && NAV_TABS.map((tab) => {
-            const IconComponent = tab.icon;
-            const isActive = currentTab === tab.value;
-            return (
-              <Tooltip key={tab.value} title={tab.label} arrow placement="bottom">
-                <NavTabLink
-                  to={tab.value}
-                  active={isActive ? 1 : 0}
-                  aria-label={tab.label}
-                >
-                  <IconComponent fontSize="medium" />
-                </NavTabLink>
-              </Tooltip>
-            );
-          })}
-        </Box>
 
-        <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1 }}>
+        <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1.5 }}>
           {isAuthenticated() ? (
             <>
               <Tooltip title="Notifications" arrow placement="bottom">
@@ -475,9 +475,31 @@ export default function Header({
                   aria-label="notifications" 
                   color="inherit" 
                   onClick={handleNotificationClick}
-                  sx={{ "&:hover": { backgroundColor: "action.hover" } }}
+                  sx={(t) => ({
+                    borderRadius: 2,
+                    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                    "&:hover": { 
+                      backgroundColor: t.palette.mode === "dark"
+                        ? alpha(t.palette.common.white, 0.1)
+                        : alpha(t.palette.common.black, 0.05),
+                      transform: "scale(1.1)",
+                    },
+                  })}
                 >
-                  <Badge badgeContent={unreadNotifications} color="error"><NotificationsIcon /></Badge>
+                  <Badge 
+                    badgeContent={unreadNotifications} 
+                    color="error"
+                    sx={{
+                      "& .MuiBadge-badge": {
+                        fontSize: "0.625rem",
+                        fontWeight: 700,
+                        minWidth: 18,
+                        height: 18,
+                      },
+                    }}
+                  >
+                    <NotificationsIcon />
+                  </Badge>
                 </IconButton>
               </Tooltip>
               <Tooltip title="Profile" arrow placement="bottom">
@@ -489,27 +511,60 @@ export default function Header({
                   aria-haspopup="true"
                   onClick={handleProfileMenuOpen}
                   color="inherit"
-                  sx={{ "&:hover": { backgroundColor: "action.hover" } }}
+                  sx={(t) => ({
+                    borderRadius: "50%",
+                    p: 0.25,
+                    border: `2px solid ${t.palette.mode === "dark" 
+                      ? alpha(t.palette.common.white, 0.1) 
+                      : alpha(t.palette.common.black, 0.08)}`,
+                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    "&:hover": { 
+                      backgroundColor: t.palette.mode === "dark"
+                        ? alpha(t.palette.common.white, 0.1)
+                        : alpha(t.palette.common.black, 0.05),
+                      transform: "scale(1.05)",
+                      borderColor: t.palette.primary.main,
+                      boxShadow: `0 0 0 3px ${alpha(t.palette.primary.main, 0.1)}`,
+                    },
+                  })}
                 >
-                  <Avatar src={user.avatar} alt={user.name} sx={{ width: 32, height: 32 }} />
+                  <Avatar 
+                    src={user.avatar} 
+                    alt={user.name} 
+                    sx={{ 
+                      width: 36, 
+                      height: 36,
+                      border: (t) => `2px solid ${t.palette.background.paper}`,
+                    }} 
+                  />
                 </IconButton>
               </Tooltip>
             </>
           ) : (
             <Button
               onClick={() => navigate("/login")}
-              variant="outlined"
+              variant="contained"
               sx={(t) => ({
-                borderColor: alpha(t.palette.common.white, t.palette.mode === "dark" ? 0.35 : 0.45),
-                color: "inherit",
+                background: "linear-gradient(135deg, #8a2be2 0%, #4a00e0 50%, #8a2be2 100%)",
+                backgroundSize: "200% 200%",
+                color: "white",
                 textTransform: "none",
-                borderRadius: 2,
-                px: 2,
+                borderRadius: 2.5,
+                px: 2.5,
+                py: 1,
                 fontSize: 14,
-                fontWeight: 600,
+                fontWeight: 700,
+                boxShadow: "0 4px 12px rgba(138, 43, 226, 0.4)",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                animation: "gradientShift 3s ease infinite",
+                "@keyframes gradientShift": {
+                  "0%, 100%": { backgroundPosition: "0% 50%" },
+                  "50%": { backgroundPosition: "100% 50%" },
+                },
                 "&:hover": {
-                  backgroundColor: "action.hover",
-                  borderColor: alpha(t.palette.common.white, t.palette.mode === "dark" ? 0.55 : 0.65),
+                  backgroundPosition: "100% 50%",
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 6px 20px rgba(138, 43, 226, 0.5)",
                 },
               })}
             >
@@ -518,7 +573,7 @@ export default function Header({
           )}
         </Box>
 
-        <Box sx={{ display: { xs: "flex", md: "none" }, alignItems: "center", gap: 0.5 }}>
+        <Box sx={{ display: { xs: "flex", md: "none" }, alignItems: "center", gap: 1 }}>
           {isAuthenticated() ? (
             <>
               <IconButton
@@ -526,9 +581,31 @@ export default function Header({
                 aria-label="notifications"
                 color="inherit"
                 onClick={handleNotificationClick}
-                sx={{ "&:hover": { backgroundColor: "action.hover" } }}
+                sx={(t) => ({
+                  borderRadius: 2,
+                  transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                  "&:hover": { 
+                    backgroundColor: t.palette.mode === "dark"
+                      ? alpha(t.palette.common.white, 0.1)
+                      : alpha(t.palette.common.black, 0.05),
+                    transform: "scale(1.1)",
+                  },
+                })}
               >
-                <Badge badgeContent={unreadNotifications} color="error"><NotificationsIcon /></Badge>
+                <Badge 
+                  badgeContent={unreadNotifications} 
+                  color="error"
+                  sx={{
+                    "& .MuiBadge-badge": {
+                      fontSize: "0.625rem",
+                      fontWeight: 700,
+                      minWidth: 18,
+                      height: 18,
+                    },
+                  }}
+                >
+                  <NotificationsIcon />
+                </Badge>
               </IconButton>
               <IconButton
                 size="medium"
@@ -538,20 +615,65 @@ export default function Header({
                 aria-haspopup="true"
                 onClick={handleProfileMenuOpen}
                 color="inherit"
-                sx={{ "&:hover": { backgroundColor: "action.hover" } }}
+                sx={(t) => ({
+                  borderRadius: "50%",
+                  p: 0.25,
+                  border: `2px solid ${t.palette.mode === "dark" 
+                    ? alpha(t.palette.common.white, 0.1) 
+                    : alpha(t.palette.common.black, 0.08)}`,
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  "&:hover": { 
+                    backgroundColor: t.palette.mode === "dark"
+                      ? alpha(t.palette.common.white, 0.1)
+                      : alpha(t.palette.common.black, 0.05),
+                    transform: "scale(1.05)",
+                    borderColor: t.palette.primary.main,
+                    boxShadow: `0 0 0 3px ${alpha(t.palette.primary.main, 0.1)}`,
+                  },
+                })}
               >
-                <Avatar src={user.avatar} alt={user.name} sx={{ width: 32, height: 32 }} />
+                <Avatar 
+                  src={user.avatar} 
+                  alt={user.name} 
+                  sx={{ 
+                    width: 36, 
+                    height: 36,
+                    border: (t) => `2px solid ${t.palette.background.paper}`,
+                  }} 
+                />
               </IconButton>
             </>
           ) : (
-            <IconButton
-              size="medium"
+            <Button
               onClick={() => navigate("/login")}
-              color="inherit"
-              sx={{ "&:hover": { backgroundColor: "action.hover" } }}
+              variant="contained"
+              size="small"
+              sx={(t) => ({
+                background: "linear-gradient(135deg, #8a2be2 0%, #4a00e0 50%, #8a2be2 100%)",
+                backgroundSize: "200% 200%",
+                color: "white",
+                textTransform: "none",
+                borderRadius: 2,
+                px: 2,
+                py: 0.75,
+                fontSize: 13,
+                fontWeight: 700,
+                boxShadow: "0 4px 12px rgba(138, 43, 226, 0.4)",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                animation: "gradientShift 3s ease infinite",
+                "@keyframes gradientShift": {
+                  "0%, 100%": { backgroundPosition: "0% 50%" },
+                  "50%": { backgroundPosition: "100% 50%" },
+                },
+                "&:hover": {
+                  backgroundPosition: "100% 50%",
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 6px 20px rgba(138, 43, 226, 0.5)",
+                },
+              })}
             >
-              <Avatar sx={{ width: 32, height: 32 }} />
-            </IconButton>
+              Đăng Nhập
+            </Button>
           )}
         </Box>
       </Toolbar>

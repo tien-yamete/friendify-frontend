@@ -1,3 +1,4 @@
+// Import các component từ Material-UI để xây dựng giao diện
 import {
   Box,
   Button,
@@ -15,6 +16,7 @@ import {
   Zoom,
   CircularProgress,
 } from "@mui/material";
+// Import các icon từ Material-UI Icons
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import GoogleIcon from "@mui/icons-material/Google";
@@ -22,30 +24,54 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import LoginIcon from "@mui/icons-material/Login";
 import SparklesIcon from "@mui/icons-material/AutoAwesome";
-import { useEffect, useState, useCallback, useRef } from "react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
-import { logIn, isAuthenticated, loginWithGoogle } from "../services/identityService";
-import { useUser } from "../contexts/UserContext";
-import LoginPanel from "../components/LoginPanel";
-import { useColorMode } from "../contexts/ThemeContext";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
+// Import React hooks để quản lý state và lifecycle
+import { useEffect, useState, useCallback, useRef } from "react";
+// Import React Router để điều hướng và lấy thông tin từ URL
+import { useNavigate, Link, useLocation } from "react-router-dom";
+// Import các service function để xử lý đăng nhập
+import { logIn, isAuthenticated, loginWithGoogle } from "../services/identityService";
+// Import context để quản lý thông tin user
+import { useUser } from "../contexts/UserContext";
+// Import component LoginPanel để hiển thị panel bên trái
+import LoginPanel from "../components/LoginPanel";
+// Import context để quản lý theme (dark/light mode)
+import { useColorMode } from "../contexts/ThemeContext";
 
 export default function LoginPage() {
+  // Hook để điều hướng đến các trang khác
   const navigate = useNavigate();
+  // Hook để lấy thông tin từ location (URL, state, etc.)
   const location = useLocation();
+  // Hook để lấy mode hiện tại (dark/light) và function để toggle
   const { mode, toggleColorMode } = useColorMode();
+  // Hook để lấy function loadUser từ UserContext
   const { loadUser } = useUser();
+  
+  // State lưu tên đăng nhập
   const [username, setUsername] = useState("");
+  // State lưu mật khẩu
   const [password, setPassword] = useState("");
+  // State lưu các lỗi validation
   const [errors, setErrors] = useState({});
+  // State để theo dõi trạng thái đang submit form
   const [submitting, setSubmitting] = useState(false);
+  // State để quản lý Snackbar (thông báo)
   const [snack, setSnack] = useState({ open: false, message: "", severity: "error" });
+  // State để hiển thị/ẩn mật khẩu
   const [showPassword, setShowPassword] = useState(false);
+  
+  // State lưu vị trí cursor để tạo hiệu ứng gradient theo chuột
   const [cursor, setCursor] = useState({ x: 50, y: 50 });
+  // Ref để lưu requestAnimationFrame ID, dùng để cancel khi cần
   const cursorUpdateRef = useRef(null);
+  // Ref để lưu thời gian cập nhật cursor cuối cùng, dùng để throttle
   const lastCursorUpdateRef = useRef(0);
 
+  // useEffect chạy khi component mount hoặc navigate thay đổi
+  // Kiểm tra nếu user đã đăng nhập thì redirect về trang chủ
+  // Cleanup function để cancel animation frame khi component unmount
   useEffect(() => {
     if (isAuthenticated()) {
       navigate("/");
@@ -57,7 +83,9 @@ export default function LoginPage() {
     };
   }, [navigate]);
 
-  // Handle OAuth callback errors
+  // useEffect chạy khi location.state thay đổi
+  // Hiển thị thông báo lỗi nếu có error được truyền từ trang khác qua location.state
+  // Sau đó xóa error khỏi history để tránh hiển thị lại khi refresh
   useEffect(() => {
     if (location.state?.error) {
       setSnack({ 
@@ -65,11 +93,13 @@ export default function LoginPage() {
         message: location.state.error, 
         severity: "error" 
       });
-      // Clear the state to prevent showing the error again on refresh
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
 
+  // Function validate form trước khi submit
+  // Kiểm tra username và password có được nhập hay không
+  // Trả về true nếu hợp lệ, false nếu có lỗi
   const validate = () => {
     const e = {};
     if (!username?.trim()) e.username = "Bắt buộc";
@@ -78,6 +108,10 @@ export default function LoginPage() {
     return Object.keys(e).length === 0;
   };
 
+  // Function xử lý khi submit form đăng nhập
+  // Ngăn chặn default form submission, validate form
+  // Gọi API logIn, xử lý các trường hợp lỗi khác nhau
+  // Nếu thành công thì load user và redirect về trang chủ
   const onSubmit = async (evt) => {
     evt.preventDefault();
     if (!validate()) return;
@@ -85,7 +119,6 @@ export default function LoginPage() {
     try {
       const res = await logIn(username.trim(), password);
       if (res?.status === 200) {
-        // Load user info after successful login
         await loadUser();
         navigate("/");
       } else {
@@ -96,31 +129,39 @@ export default function LoginPage() {
       const body = err?.response?.data || {};
       const msg = body?.message ?? body?.error ?? err?.message ?? "Login failed";
 
+      // Xử lý trường hợp email chưa được verify
       if (status === 403 && (body?.error === "EMAIL_NOT_VERIFIED" || body?.code === "EMAIL_NOT_VERIFIED")) {
         navigate("/verify-email", { state: { email: username.trim(), reason: msg } });
         return;
       }
 
+      // Xử lý trường hợp quá nhiều request (rate limiting)
       if (status === 429 || body?.code === "TOO_MANY_REQUESTS") {
         setSnack({ open: true, message: msg || "Too many attempts. Please wait.", severity: "warning" });
         return;
       }
 
+      // Xử lý lỗi validation từ server
       if (body?.errors && typeof body.errors === "object") {
         setErrors((prev) => ({ ...prev, ...body.errors }));
         setSnack({ open: true, message: msg || "Validation error", severity: "error" });
         return;
       }
 
+      // Xử lý các lỗi khác
       setSnack({ open: true, message: String(msg), severity: "error" });
     } finally {
       setSubmitting(false);
     }
   };
 
+  // Function xử lý sự kiện di chuyển chuột
+  // Sử dụng throttle để giới hạn số lần cập nhật (mỗi 100ms)
+  // Tính toán vị trí cursor theo phần trăm màn hình
+  // Sử dụng requestAnimationFrame để tối ưu performance
+  // Cập nhật state cursor để tạo hiệu ứng gradient theo chuột
   const handleMouseMove = useCallback((e) => {
     const now = Date.now();
-    // Throttle cursor updates to reduce lag (100ms)
     if (now - lastCursorUpdateRef.current < 100) {
       return;
     }
@@ -138,6 +179,10 @@ export default function LoginPage() {
   }, []);
 
   return (
+    // Container chính của trang đăng nhập
+    // Grid layout: 1 cột trên mobile, 2 cột trên desktop
+    // Background gradient thay đổi theo theme
+    // Lắng nghe sự kiện di chuyển chuột để tạo hiệu ứng
     <Box
       onMouseMove={handleMouseMove}
       sx={{
@@ -152,7 +197,7 @@ export default function LoginPage() {
             : "linear-gradient(135deg, #f5f7fa 0%, #e8eaf6 50%, #f5f7fa 100%)",
       }}
     >
-      {/* Animated background particles */}
+      {/* Background layer với hiệu ứng gradient và animation float */}
       <Box
         sx={{
           position: "absolute",
@@ -177,7 +222,10 @@ export default function LoginPage() {
         }}
       />
 
+      {/* Component LoginPanel hiển thị ở bên trái (desktop) hoặc ẩn (mobile) */}
       <LoginPanel variant="login" />
+      {/* Container chứa form đăng nhập */}
+      {/* Background gradient thay đổi theo vị trí cursor để tạo hiệu ứng interactive */}
       <Box
         className="login-form-container"
         sx={{
@@ -206,7 +254,7 @@ export default function LoginPage() {
           },
         }}
       >
-        {/* Theme Toggle Button */}
+        {/* Button toggle dark/light mode */}
         <IconButton
           onClick={toggleColorMode}
           sx={{
@@ -245,6 +293,9 @@ export default function LoginPage() {
             <DarkModeIcon sx={{ fontSize: 24 }} />
           )}
         </IconButton>
+        {/* Card chứa form đăng nhập với hiệu ứng fade in */}
+        {/* Glassmorphism effect với backdrop blur */}
+        {/* Có animation shimmer ở top border */}
         <Fade in={true} timeout={800}>
           <Card 
             className="login-card"
@@ -306,7 +357,9 @@ export default function LoginPage() {
             }}
           >
             <CardContent sx={{ p: { xs: 3.5, sm: 5 }, "&:last-child": { pb: { xs: 3.5, sm: 5 } } }}>
+            {/* Header của form với icon và tiêu đề */}
             <Box className="login-header" sx={{ mb: { xs: 3.5, sm: 4.5 }, textAlign: "center" }}>
+              {/* Icon đăng nhập với animation zoom và pulse */}
               <Zoom in={true} timeout={600} style={{ transitionDelay: "200ms" }}>
                 <Box
                   sx={{
@@ -398,7 +451,9 @@ export default function LoginPage() {
               </Typography>
             </Box>
 
+            {/* Form đăng nhập */}
             <Box component="form" onSubmit={onSubmit} noValidate className="login-form">
+              {/* TextField nhập tên đăng nhập với animation fade in */}
               <Fade in={true} timeout={800} style={{ transitionDelay: "300ms" }}>
                 <TextField
                   label="Tên đăng nhập"
@@ -466,6 +521,8 @@ export default function LoginPage() {
                   }}
                 />
               </Fade>
+              {/* TextField nhập mật khẩu với animation fade in */}
+              {/* Có button toggle để hiển thị/ẩn mật khẩu */}
               <Fade in={true} timeout={800} style={{ transitionDelay: "400ms" }}>
                 <TextField
                   label="Mật khẩu"
@@ -556,6 +613,7 @@ export default function LoginPage() {
                 />
               </Fade>
 
+              {/* Link quên mật khẩu */}
               <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 0.5, mb: 3 }}>
                 <MuiLink 
                   tabIndex={-1} 
@@ -577,6 +635,9 @@ export default function LoginPage() {
                 </MuiLink>
               </Box>
 
+              {/* Button submit form đăng nhập với animation fade in */}
+              {/* Hiển thị loading state khi đang submit */}
+              {/* Có hiệu ứng gradient và hover effects */}
               <Fade in={true} timeout={800} style={{ transitionDelay: "500ms" }}>
                 <Button
                   type="submit"
@@ -703,6 +764,7 @@ export default function LoginPage() {
                 </Button>
               </Fade>
 
+              {/* Divider với text "hoặc" để phân cách giữa đăng nhập thường và Google */}
               <Divider sx={{ my: { xs: 3, sm: 3.5 }, position: "relative" }}>
                 <Typography 
                   variant="body2" 
@@ -721,6 +783,8 @@ export default function LoginPage() {
                 </Typography>
               </Divider>
 
+              {/* Button đăng nhập bằng Google với animation fade in */}
+              {/* Gọi loginWithGoogle() khi click */}
               <Fade in={true} timeout={800} style={{ transitionDelay: "600ms" }}>
                 <Button
                   variant="outlined"
@@ -788,6 +852,7 @@ export default function LoginPage() {
                 </Button>
               </Fade>
 
+              {/* Link đăng ký tài khoản mới với animation fade in */}
               <Fade in={true} timeout={800} style={{ transitionDelay: "700ms" }}>
                 <Typography 
                   sx={{ 
@@ -822,6 +887,8 @@ export default function LoginPage() {
         </Fade>
       </Box>
 
+      {/* Snackbar hiển thị thông báo lỗi/thành công */}
+      {/* Tự động ẩn sau 8s (error) hoặc 4s (warning/info) */}
       <Snackbar
         open={snack.open}
         autoHideDuration={snack.severity === "error" ? 8000 : 4000}

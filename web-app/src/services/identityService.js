@@ -9,17 +9,16 @@ export const logIn = async (username, password) => {
       password: password,
     });
 
-    // Handle different response formats
     const token = response.data?.result?.token || response.data?.token || response.data?.data?.token;
     if (token) {
       setToken(token);
     } else {
-      console.warn("No token found in response:", response.data);
+      console.warn("Không tìm thấy token thông báo nào trong phản hồi:", response.data);
     }
 
     return response;
   } catch (error) {
-    console.error("Login error:", error);
+    console.error("Đăng nhập thất bại: ", error);
     throw error;
   }
 };
@@ -32,27 +31,30 @@ export const isAuthenticated = () => {
   return getToken();
 };
 
-export const registerAccount = async ({ username, email, password }) => {
+export const registerAccount = async ({ username, email, password, firstName, lastName}) => {
   const response = await httpClient.post(API.REGISTER, {
     username: username,
     email: email,
     password: password,
+    firstName: firstName,
+    lastName: lastName,
   });
 
   return response;
 };
 
 export const requestPasswordReset = async (email) => {
-  const response = await httpClient.post("/identity/auth/forgot-password", {
+  const response = await httpClient.post(API.FORGOT_PASSWORD, {
     email: email,
   });
 
   return response;
 }
 
-export const resetPassword = async (token, newPassword) => {
-  const response = await httpClient.post("/identity/auth/reset-password", {
-    token: token,
+export const resetPassword = async ({ email, otpCode, newPassword }) => {
+  const response = await httpClient.post(API.RESET_PASSWORD, {
+    email: email,
+    otpCode: otpCode,
     newPassword: newPassword,
   });
 
@@ -76,13 +78,7 @@ export const verifyUser = async ({ email, otpCode }) => {
 }
 
 export const loginWithGoogle = () => {
-  // Redirect to Google OAuth endpoint
-  // OAuth2 flow: Frontend -> Identity Service -> Google -> Identity Service -> Frontend callback
-  // The proxy in vite.config will forward /identity to http://localhost:8080 (API Gateway)
-  // API Gateway will route /api/v1/identity/** to identity service at http://localhost:8081
-  // But OAuth2 endpoint should be accessed via API Gateway: /api/v1/identity/oauth2/authorization/google
   const googleLoginUrl = `${CONFIG.API_GATEWAY}${CONFIG.IDENTITY_SERVICE}${API.GOOGLE_LOGIN}`;
   
-  // Use relative path - proxy will handle forwarding
   window.location.href = googleLoginUrl;
 }

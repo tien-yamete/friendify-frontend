@@ -7,13 +7,20 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Toolbar from "@mui/material/Toolbar";
 import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
 import HomeIcon from "@mui/icons-material/Home";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import PeopleIcon from "@mui/icons-material/People";
+import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
 import GroupsIcon from "@mui/icons-material/Groups";
+import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
 import ChatIcon from "@mui/icons-material/Chat";
+import ChatOutlinedIcon from "@mui/icons-material/ChatBubbleOutline";
 import FlagIcon from "@mui/icons-material/Flag";
+import FlagOutlinedIcon from "@mui/icons-material/FlagOutlined";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
+import BookmarkOutlinedIcon from "@mui/icons-material/BookmarkBorder";
 import { Link, useLocation } from "react-router-dom";
 
 function SideMenu({ onNavigate }) {
@@ -39,22 +46,111 @@ function SideMenu({ onNavigate }) {
   }, [location.pathname]);
 
   const menuItems = [
-    { key: "home", icon: <HomeIcon />, text: "Trang Chủ", to: "/" },
-    { key: "chat", icon: <ChatIcon />, text: "Nhắn Tin  ", to: "/chat" },
-    { key: "friends", icon: <PeopleIcon />, text: "Bạn Bè", to: "/friends" },
-    { key: "groups", icon: <GroupsIcon />, text: "Nhóm", to: "/groups" },
-    { key: "pages", icon: <FlagIcon />, text: "Trang", to: "/pages" },
-    { key: "saved", icon: <BookmarkIcon />, text: "Đã Lưu", to: "/saved" },
+    { 
+      key: "home", 
+      icon: HomeIcon, 
+      iconOutlined: HomeOutlinedIcon, 
+      text: "Trang Chủ", 
+      to: "/" 
+    },
+    { 
+      key: "chat", 
+      icon: ChatIcon, 
+      iconOutlined: ChatOutlinedIcon, 
+      text: "Nhắn Tin", 
+      to: "/chat" 
+    },
+    { 
+      key: "friends", 
+      icon: PeopleIcon, 
+      iconOutlined: PeopleOutlinedIcon, 
+      text: "Bạn Bè", 
+      to: "/friends" 
+    },
+    { 
+      key: "groups", 
+      icon: GroupsIcon, 
+      iconOutlined: GroupOutlinedIcon, 
+      text: "Nhóm", 
+      to: "/groups" 
+    },
+    { 
+      key: "pages", 
+      icon: FlagIcon, 
+      iconOutlined: FlagOutlinedIcon, 
+      text: "Trang", 
+      to: "/pages" 
+    },
+    { 
+      key: "saved", 
+      icon: BookmarkIcon, 
+      iconOutlined: BookmarkOutlinedIcon, 
+      text: "Đã Lưu", 
+      to: "/saved" 
+    },
   ];
 
   return (
     <>
       <Toolbar />
-      <List sx={{ px: 2, py: 2 }}>
+      <Box
+        sx={{
+          px: 2,
+          py: 3,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 1.5,
+          mb: 2,
+        }}
+      >
+        <Box
+          component="img"
+          src="/src/assets/icons/logo.png"
+          alt="Friendify Logo"
+          onError={(e) => {
+            e.target.style.display = "none";
+          }}
+          sx={{
+            width: 56,
+            height: 56,
+            borderRadius: 2.5,
+            boxShadow: (t) => t.palette.mode === "dark"
+              ? "0 4px 16px rgba(138, 43, 226, 0.3)"
+              : "0 4px 16px rgba(138, 43, 226, 0.2)",
+            transition: "all 0.3s ease",
+            "&:hover": {
+              transform: "scale(1.05)",
+              boxShadow: (t) => t.palette.mode === "dark"
+                ? "0 6px 20px rgba(138, 43, 226, 0.4)"
+                : "0 6px 20px rgba(138, 43, 226, 0.3)",
+            },
+          }}
+        />
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 800,
+            fontSize: "1.25rem",
+            background: (t) => t.palette.mode === "dark"
+              ? "linear-gradient(135deg, #fff 0%, #e0e0e0 100%)"
+              : "linear-gradient(135deg, #8a2be2 0%, #4a00e0 100%)",
+            backgroundClip: "text",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            letterSpacing: "-0.02em",
+          }}
+        >
+          Friendify
+        </Typography>
+      </Box>
+      <Divider sx={{ mx: 2, mb: 1 }} />
+      <List sx={{ px: 1.5, py: 1 }}>
         {menuItems.map((item) => {
           const isActive = activeItem === item.key;
+          const IconComponent = isActive ? item.icon : item.iconOutlined;
           return (
-            <ListItem key={item.key} disablePadding sx={{ mb: 1 }}>
+            <ListItem key={item.key} disablePadding sx={{ mb: 0.5 }}>
               <ListItemButton
                 component={Link}
                 to={item.to}
@@ -65,23 +161,25 @@ function SideMenu({ onNavigate }) {
                 selected={isActive}
                 sx={(t) => ({
                   borderRadius: 3,
-                  py: 2,
+                  py: 1.5,
                   px: 2,
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   position: "relative",
-                  overflow: "hidden",
+                  overflow: "visible",
                   background: isActive
                     ? t.palette.mode === "dark"
-                      ? "linear-gradient(135deg, rgba(139, 154, 255, 0.12) 0%, rgba(151, 117, 212, 0.12) 100%)"
-                      : "linear-gradient(135deg, rgba(102, 126, 234, 0.12) 0%, rgba(118, 75, 162, 0.12) 100%)"
+                      ? `linear-gradient(135deg, ${alpha("#8a2be2", 0.15)} 0%, ${alpha("#4a00e0", 0.15)} 100%)`
+                      : `linear-gradient(135deg, ${alpha("#8a2be2", 0.12)} 0%, ${alpha("#4a00e0", 0.12)} 100%)`
                     : "transparent",
                   boxShadow: isActive
                     ? t.palette.mode === "dark"
-                      ? "0 4px 12px rgba(139, 154, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
-                      : "0 4px 12px rgba(102, 126, 234, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8)"
+                      ? "0 4px 16px rgba(138, 43, 226, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+                      : "0 4px 16px rgba(138, 43, 226, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9)"
                     : "none",
                   border: isActive
-                    ? `1px solid ${t.palette.mode === "dark" ? "rgba(139, 154, 255, 0.2)" : "rgba(102, 126, 234, 0.2)"}`
+                    ? `1px solid ${t.palette.mode === "dark" 
+                      ? alpha("#8a2be2", 0.3) 
+                      : alpha("#8a2be2", 0.25)}`
                     : "1px solid transparent",
                   "&::before": isActive
                     ? {
@@ -91,59 +189,58 @@ function SideMenu({ onNavigate }) {
                         top: "50%",
                         transform: "translateY(-50%)",
                         width: 4,
-                        height: "60%",
+                        height: "70%",
                         borderRadius: "0 4px 4px 0",
-                        background: t.palette.mode === "dark"
-                          ? "linear-gradient(180deg, #8b9aff 0%, #9775d4 100%)"
-                          : "linear-gradient(180deg, #667eea 0%, #764ba2 100%)",
-                        boxShadow: t.palette.mode === "dark"
-                          ? "0 0 12px rgba(139, 154, 255, 0.6)"
-                          : "0 0 12px rgba(102, 126, 234, 0.6)",
+                        background: "linear-gradient(180deg, #8a2be2 0%, #4a00e0 100%)",
+                        boxShadow: "0 0 12px rgba(138, 43, 226, 0.6)",
                       }
                     : {},
                   "&:hover": {
                     background: isActive
                       ? t.palette.mode === "dark"
-                        ? "linear-gradient(135deg, rgba(139, 154, 255, 0.18) 0%, rgba(151, 117, 212, 0.18) 100%)"
-                        : "linear-gradient(135deg, rgba(102, 126, 234, 0.18) 0%, rgba(118, 75, 162, 0.18) 100%)"
+                        ? `linear-gradient(135deg, ${alpha("#8a2be2", 0.2)} 0%, ${alpha("#4a00e0", 0.2)} 100%)`
+                        : `linear-gradient(135deg, ${alpha("#8a2be2", 0.18)} 0%, ${alpha("#4a00e0", 0.18)} 100%)`
                       : t.palette.mode === "dark"
-                      ? "rgba(255, 255, 255, 0.05)"
-                      : "rgba(0, 0, 0, 0.04)",
-                    transform: "translateX(6px)",
+                      ? alpha(t.palette.common.white, 0.06)
+                      : alpha(t.palette.common.black, 0.04),
+                    transform: "translateX(4px)",
                     boxShadow: isActive
                       ? t.palette.mode === "dark"
-                        ? "0 6px 16px rgba(139, 154, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)"
-                        : "0 6px 16px rgba(102, 126, 234, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9)"
+                        ? "0 6px 20px rgba(138, 43, 226, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15)"
+                        : "0 6px 20px rgba(138, 43, 226, 0.2), inset 0 1px 0 rgba(255, 255, 255, 1)"
                       : t.palette.mode === "dark"
                       ? "0 2px 8px rgba(0, 0, 0, 0.3)"
                       : "0 2px 8px rgba(0, 0, 0, 0.08)",
                   },
                   "&:active": {
-                    transform: "translateX(4px) scale(0.98)",
+                    transform: "translateX(2px) scale(0.98)",
                   },
                 })}
               >
                 <ListItemIcon
                   sx={(t) => ({
-                    minWidth: 44,
+                    minWidth: 40,
                     color: isActive
-                      ? t.palette.mode === "dark" ? "#8b9aff" : "#667eea"
-                      : "text.secondary",
+                      ? "#8a2be2"
+                      : t.palette.text.secondary,
                     transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                    filter: isActive
-                      ? "drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3))"
-                      : "none",
+                    "& svg": {
+                      fontSize: 24,
+                      filter: isActive
+                        ? "drop-shadow(0 2px 4px rgba(138, 43, 226, 0.4))"
+                        : "none",
+                    },
                   })}
                 >
-                  {item.icon}
+                  <IconComponent />
                 </ListItemIcon>
                 <ListItemText
                   primary={item.text}
                   primaryTypographyProps={{
-                    fontWeight: isActive ? 700 : 600,
+                    fontWeight: isActive ? 700 : 500,
                     fontSize: 15,
                     color: isActive
-                      ? (t) => t.palette.mode === "dark" ? "#8b9aff" : "#667eea"
+                      ? "#8a2be2"
                       : "text.primary",
                     sx: {
                       transition: "all 0.3s ease",
@@ -155,7 +252,6 @@ function SideMenu({ onNavigate }) {
           );
         })}
       </List>
-      <Divider sx={{ mx: 2 }} />
     </>
   );
 }
