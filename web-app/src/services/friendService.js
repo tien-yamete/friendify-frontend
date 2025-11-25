@@ -2,7 +2,7 @@ import { API_ENDPOINTS } from '../config/apiConfig';
 import { apiFetch } from './apiHelper';
 
 export const getFriendRequests = async (page = 1, size = 20) => {
-  return apiFetch(`${API_ENDPOINTS.FRIEND.REQUESTS}?page=${page}&size=${size}`);
+  return apiFetch(`${API_ENDPOINTS.FRIEND.RECEIVED_REQUESTS}?page=${page}&size=${size}`);
 };
 
 export const getFriendSuggestions = async (page = 1, size = 20) => {
@@ -10,29 +10,29 @@ export const getFriendSuggestions = async (page = 1, size = 20) => {
 };
 
 export const getAllFriends = async (page = 1, size = 20) => {
-  return apiFetch(`${API_ENDPOINTS.FRIEND.LIST}?page=${page}&size=${size}`);
+  return apiFetch(`${API_ENDPOINTS.FRIEND.LIST_FRIENDS}?page=${page}&size=${size}`);
 };
 
 export const acceptFriendRequest = async (friendId) => {
-  return apiFetch(API_ENDPOINTS.FRIEND.ACCEPT.replace(':id', friendId), {
+  return apiFetch(API_ENDPOINTS.FRIEND.ACCEPT_REQUEST.replace(':id', friendId), {
     method: 'POST',
   });
 };
 
 export const declineFriendRequest = async (friendId) => {
-  return apiFetch(API_ENDPOINTS.FRIEND.DECLINE.replace(':id', friendId), {
+  return apiFetch(API_ENDPOINTS.FRIEND.REJECT_REQUEST.replace(':id', friendId), {
     method: 'POST',
   });
 };
 
 export const addFriend = async (userId) => {
-  return apiFetch(API_ENDPOINTS.FRIEND.ADD.replace(':id', userId), {
+  return apiFetch(API_ENDPOINTS.FRIEND.SEND_REQUEST.replace(':id', userId), {
     method: 'POST',
   });
 };
 
 export const removeFriend = async (friendId) => {
-  return apiFetch(API_ENDPOINTS.FRIEND.REMOVE.replace(':id', friendId), {
+  return apiFetch(API_ENDPOINTS.FRIEND.REMOVE_FRIEND.replace(':id', friendId), {
     method: 'DELETE',
   });
 };

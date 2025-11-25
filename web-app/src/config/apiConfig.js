@@ -4,8 +4,10 @@
 export const CONFIG = {
   // Tất cả request đi qua Gateway ở port 8080
   API_GATEWAY: "/api/v1",
-  IDENTITY_SERVICE: "/identity",
-  WS_URL: "/api/v1/chat/ws",
+  
+  // WebSocket Endpoint (Đi qua Gateway vào Chat Service)
+  // Backend Config: server.servlet.context-path: /chat
+  WS_URL: "/chat/ws", 
 };
 
 // Helper function 
