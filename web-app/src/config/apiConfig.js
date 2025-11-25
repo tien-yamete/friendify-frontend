@@ -77,18 +77,18 @@ export const API_ENDPOINTS = {
 
   // --- INTERACTION SERVICE (Port 8088) ---
   INTERACTION: {
-    // Comments
+    // Comments - Backend: @RequestMapping("/comments")
     CREATE_COMMENT: '/interaction/comments',
-    GET_POST_COMMENTS: '/interaction/comments/post/:id', // :id = postId
+    GET_POST_COMMENTS: '/interaction/comments/post/:id',
     UPDATE_COMMENT: '/interaction/comments/:id',
     DELETE_COMMENT: '/interaction/comments/:id',
     
-    // Likes
-    LIKE: '/interaction/api/likes', // POST { postId: "..." }
-    UNLIKE_BY_ID: '/interaction/api/likes/:id',
-    UNLIKE_POST: '/interaction/api/likes/post/:id',
-    UNLIKE_COMMENT: '/interaction/api/likes/comment/:id',
-    GET_POST_LIKES: '/interaction/api/likes/post/:id',
+    // Likes - Backend: @RequestMapping("/likes")
+    LIKE: '/interaction/likes',
+    UNLIKE_BY_ID: '/interaction/likes/:id',
+    UNLIKE_POST: '/interaction/likes/post/:id',
+    UNLIKE_COMMENT: '/interaction/likes/comment/:id',
+    GET_POST_LIKES: '/interaction/likes/post/:id',
   },
 
   // --- SOCIAL SERVICE (Port 8087) ---

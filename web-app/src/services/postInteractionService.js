@@ -53,6 +53,19 @@ export const deleteComment = async (commentId) => {
   });
 };
 
+export const likeComment = async (commentId) => {
+  return apiFetch(API_ENDPOINTS.INTERACTION.LIKE, {
+    method: 'POST',
+    body: JSON.stringify({ commentId }),
+  });
+};
+
+export const unlikeComment = async (commentId) => {
+  return apiFetch(API_ENDPOINTS.INTERACTION.UNLIKE_COMMENT.replace(':id', commentId), {
+    method: 'DELETE',
+  });
+};
+
 // --- POST ---
 
 export const sharePost = async (postId, content) => {

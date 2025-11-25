@@ -299,7 +299,7 @@ export default function HomePage() {
         
         return {
           id: post.id,
-          avatar: avatar && avatar.trim() !== '' ? avatar : null, // Chỉ set avatar nếu có giá trị hợp lệ
+          avatar: avatar && avatar.trim() !== '' ? avatar : null,
           username: post.username || post.userName || post.user?.username || 'Unknown',
           firstName: userInfo.firstName || post.firstName || post.user?.firstName || '',
           lastName: userInfo.lastName || post.lastName || post.user?.lastName || '',
@@ -307,8 +307,11 @@ export default function HomePage() {
           created: created,
           content: post.content || '',
           media: media,
-          userId: postUserId, // Ensure userId is always set
+          userId: postUserId,
           privacy: post.privacy || 'PUBLIC',
+          likeCount: post.likeCount || 0,
+          commentCount: post.commentCount || 0,
+          isLiked: post.isLiked || false,
           ...post,
         };
       });
@@ -380,13 +383,50 @@ export default function HomePage() {
       };
 
       const response = await createPost(postData);
-      const newPost = response.data?.result || response.data;
+      const newPostData = response.data?.result || response.data;
       
-      if (newPost) {
+      if (newPostData) {
+        const media = (newPostData.imageUrls || []).map((url) => ({
+          url: url,
+          type: 'image',
+          alt: `Post image ${newPostData.id}`,
+        }));
+        
+        const formatTimeAgo = (dateString) => {
+          if (!dateString) return 'Vừa xong';
+          const date = new Date(dateString);
+          const now = new Date();
+          const diffMs = now - date;
+          const diffMins = Math.floor(diffMs / 60000);
+          if (diffMins < 1) return 'Vừa xong';
+          if (diffMins < 60) return `${diffMins} phút trước`;
+          return date.toLocaleDateString('vi-VN');
+        };
+        
+        const formattedPost = {
+          id: newPostData.id,
+          avatar: user?.avatar && user.avatar.trim() !== '' ? user.avatar : null,
+          username: user?.username || 'Unknown',
+          firstName: user?.firstName || '',
+          lastName: user?.lastName || '',
+          displayName: user?.lastName && user?.firstName 
+            ? `${user.lastName} ${user.firstName}`.trim()
+            : user?.firstName || user?.lastName || user?.username || 'Unknown',
+          created: formatTimeAgo(newPostData.createdDate || newPostData.created),
+          content: newPostData.content || '',
+          media: media,
+          userId: user?.id || user?.userId,
+          privacy: newPostData.privacy || 'PUBLIC',
+          likeCount: newPostData.likeCount || 0,
+          commentCount: newPostData.commentCount || 0,
+          isLiked: newPostData.isLiked || false,
+          ...newPostData,
+        };
+        
         setPosts((prev) => {
-          const exists = prev.some(p => p.id === newPost.id);
+          const exists = prev.some(p => p.id === formattedPost.id);
           if (exists) return prev;
-          return [newPost, ...prev];
+          return [formattedPost, ...prev];
         });
         
         setNewPostContent("");
@@ -398,7 +438,6 @@ export default function HomePage() {
         setSnackbarSeverity("success");
         setSnackbarOpen(true);
       } else {
-        // Reload posts if response format is unexpected
         setPage(1);
         loadPosts(1);
         setNewPostContent("");
