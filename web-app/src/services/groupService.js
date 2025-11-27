@@ -1,28 +1,28 @@
 import { API_ENDPOINTS } from '../config/apiConfig';
 import { apiFetch } from './apiHelper';
+import { extractArrayFromResponse } from '../utils/apiHelper';
 
-export const getMyGroups = async () => {
-  return apiFetch(API_ENDPOINTS.GROUP.MY_GROUPS);
+export const getMyGroups = async (page = 1, size = 10) => {
+  const endpoint = `${API_ENDPOINTS.GROUP.MY_GROUPS}?page=${page}&size=${size}`;
+  return apiFetch(endpoint);
 };
 
-export const getSuggestedGroups = async () => {
-  return apiFetch(API_ENDPOINTS.GROUP.SUGGESTED);
+export const getJoinedGroups = async (page = 1, size = 10) => {
+  const endpoint = `${API_ENDPOINTS.GROUP.JOINED_GROUPS}?page=${page}&size=${size}`;
+  return apiFetch(endpoint);
 };
 
-export const getDiscoverGroups = async () => {
-  return apiFetch(API_ENDPOINTS.GROUP.DISCOVER);
+export const searchGroups = async (keyword = '', page = 1, size = 10) => {
+  const endpoint = `${API_ENDPOINTS.GROUP.SEARCH}?keyword=${encodeURIComponent(keyword)}&page=${page}&size=${size}`;
+  return apiFetch(endpoint);
 };
 
 export const getGroupDetail = async (groupId) => {
   return apiFetch(API_ENDPOINTS.GROUP.DETAIL.replace(':id', groupId));
 };
 
-export const getGroupMembers = async (groupId) => {
-  return apiFetch(API_ENDPOINTS.GROUP.MEMBERS.replace(':id', groupId));
-};
-
-export const getGroupPosts = async (groupId, page = 1, size = 20) => {
-  const endpoint = `${API_ENDPOINTS.GROUP.POSTS.replace(':id', groupId)}?page=${page}&size=${size}`;
+export const getGroupMembers = async (groupId, page = 1, size = 10) => {
+  const endpoint = `${API_ENDPOINTS.GROUP.MEMBERS.replace(':id', groupId)}?page=${page}&size=${size}`;
   return apiFetch(endpoint);
 };
 
@@ -30,6 +30,19 @@ export const createGroup = async (groupData) => {
   return apiFetch(API_ENDPOINTS.GROUP.CREATE, {
     method: 'POST',
     body: JSON.stringify(groupData),
+  });
+};
+
+export const updateGroup = async (groupId, groupData) => {
+  return apiFetch(API_ENDPOINTS.GROUP.UPDATE.replace(':id', groupId), {
+    method: 'PUT',
+    body: JSON.stringify(groupData),
+  });
+};
+
+export const deleteGroup = async (groupId) => {
+  return apiFetch(API_ENDPOINTS.GROUP.DELETE.replace(':id', groupId), {
+    method: 'DELETE',
   });
 };
 
@@ -45,9 +58,33 @@ export const leaveGroup = async (groupId) => {
   });
 };
 
-export const createGroupPost = async (groupId, postData) => {
-  return apiFetch(API_ENDPOINTS.GROUP.POSTS.replace(':id', groupId), {
+export const addMember = async (groupId, userId) => {
+  return apiFetch(API_ENDPOINTS.GROUP.ADD_MEMBER.replace(':id', groupId).replace(':userId', userId), {
     method: 'POST',
-    body: JSON.stringify(postData),
+  });
+};
+
+export const removeMember = async (groupId, userId) => {
+  return apiFetch(API_ENDPOINTS.GROUP.REMOVE_MEMBER.replace(':id', groupId).replace(':userId', userId), {
+    method: 'DELETE',
+  });
+};
+
+export const updateMemberRole = async (groupId, userId, role) => {
+  return apiFetch(API_ENDPOINTS.GROUP.UPDATE_MEMBER_ROLE.replace(':id', groupId).replace(':userId', userId), {
+    method: 'PUT',
+    body: JSON.stringify({ role }),
+  });
+};
+
+export const getJoinRequests = async (groupId, page = 1, size = 10) => {
+  const endpoint = `${API_ENDPOINTS.GROUP.JOIN_REQUESTS.replace(':id', groupId)}?page=${page}&size=${size}`;
+  return apiFetch(endpoint);
+};
+
+export const processJoinRequest = async (groupId, requestId, action) => {
+  return apiFetch(API_ENDPOINTS.GROUP.PROCESS_JOIN_REQUEST.replace(':id', groupId).replace(':requestId', requestId), {
+    method: 'POST',
+    body: JSON.stringify({ action }), // 'APPROVE' or 'REJECT'
   });
 };

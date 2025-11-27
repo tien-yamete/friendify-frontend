@@ -2,11 +2,9 @@
 
 // Cấu hình API Gateway
 export const CONFIG = {
-  // Tất cả request đi qua Gateway ở port 8080
   API_GATEWAY: "/api/v1",
   
-  // WebSocket Endpoint (Đi qua Gateway vào Chat Service)
-  // Backend Config: server.servlet.context-path: /chat
+
   WS_URL: "/chat/ws", 
 };
 
@@ -15,7 +13,6 @@ export const getApiUrl = (endpoint) => {
   if (endpoint.startsWith('http')) {
     return endpoint;
   }
-  // Nếu endpoint chưa có prefix gateway 
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   if (cleanEndpoint.startsWith(CONFIG.API_GATEWAY)) {
     return cleanEndpoint;
@@ -47,20 +44,20 @@ export const API_ENDPOINTS = {
     SEARCH: '/profile/users/search',
     UPDATE_AVATAR: '/profile/users/avatar',
     UPDATE_BACKGROUND: '/profile/users/background',
-    // Backend Controller map: /{profileId} nhưng Gateway ép buộc prefix /users/
-    // Bạn CẦN sửa Backend: Thêm @RequestMapping("/users") vào ProfileController
+    GET_ALL_PROFILES: '/profile/users',
     GET_PROFILE: '/profile/users/:id', 
     BATCH_PROFILES: '/profile/internal/users/batch',
   },
 
   // --- POST SERVICE (Port 8084) ---
   POST: {
-    CREATE: '/post',
+    CREATE: '/post/create',
+    CREATE_JSON: '/post/json',
     MY_POSTS: '/post/my-posts',
     GET_BY_ID: '/post/:id',
     UPDATE: '/post/:id',
+    UPDATE_JSON: '/post/:id/json',
     DELETE: '/post/:id',
-    // Share dùng Query Param: ?content=...
     SHARE: '/post/share/:id', 
     SAVE: '/post/save/:id',
     UNSAVE: '/post/unsave/:id',
@@ -73,11 +70,12 @@ export const API_ENDPOINTS = {
     SAVED_COUNT: '/post/saved-count',
     SEARCH: '/post/search',
     PUBLIC_POSTS: '/post/public',
+    FEED: '/post/feed',
+    GROUP_POSTS: '/post/group/:id',
   },
 
   // --- INTERACTION SERVICE (Port 8088) ---
   INTERACTION: {
-    // Comments - Backend: @RequestMapping("/comments")
     CREATE_COMMENT: '/interaction/comments',
     GET_POST_COMMENTS: '/interaction/comments/post/:id',
     UPDATE_COMMENT: '/interaction/comments/:id',
@@ -89,6 +87,25 @@ export const API_ENDPOINTS = {
     UNLIKE_POST: '/interaction/likes/post/:id',
     UNLIKE_COMMENT: '/interaction/likes/comment/:id',
     GET_POST_LIKES: '/interaction/likes/post/:id',
+  },
+
+  // --- GROUP SERVICE (Port 8089) ---
+  GROUP: {
+    CREATE: '/groups',
+    UPDATE: '/groups/:id',
+    DELETE: '/groups/:id',
+    DETAIL: '/groups/:id',
+    MY_GROUPS: '/groups/my-groups',
+    JOINED_GROUPS: '/groups/joined-groups',
+    SEARCH: '/groups/search',
+    JOIN: '/groups/:id/join',
+    LEAVE: '/groups/:id/leave',
+    MEMBERS: '/groups/:id/members',
+    ADD_MEMBER: '/groups/:id/members/:userId',
+    REMOVE_MEMBER: '/groups/:id/members/:userId',
+    UPDATE_MEMBER_ROLE: '/groups/:id/members/:userId/role',
+    JOIN_REQUESTS: '/groups/:id/join-requests',
+    PROCESS_JOIN_REQUEST: '/groups/:id/join-requests/:requestId/process',
   },
 
   // --- SOCIAL SERVICE (Port 8087) ---

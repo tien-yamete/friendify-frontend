@@ -51,31 +51,44 @@ export default function CreatePostButton({ user, onPostCreated, show = true }) {
   };
 
   const handlePostContent = async () => {
+    // Clear previous errors
+    setError(null);
+
+    // Validate: phải có nội dung hoặc ảnh/video
     if (!newPostContent.trim() && mediaFiles.length === 0) {
       setError("Vui lòng nhập nội dung hoặc thêm ảnh/video");
       return;
     }
 
+    // Lọc ảnh từ mediaFiles (chỉ lấy file ảnh, bỏ qua video)
+    const imageFiles = mediaFiles.filter(file => file && file instanceof File && file.type.startsWith("image/"));
+    
+    // Validate tổng dung lượng ảnh không quá 20MB (TRƯỚC KHI GỌI API)
+    if (imageFiles.length > 0) {
+      const MAX_TOTAL_IMAGE_SIZE = 20 * 1024 * 1024; // 20MB
+      const totalImageSize = imageFiles.reduce((total, file) => total + (file.size || 0), 0);
+      
+      if (totalImageSize > MAX_TOTAL_IMAGE_SIZE) {
+        const totalSizeMB = (totalImageSize / (1024 * 1024)).toFixed(2);
+        setError(`Tổng dung lượng ảnh (${totalSizeMB}MB) vượt quá giới hạn 20MB. Vui lòng giảm số lượng hoặc kích thước ảnh.`);
+        return;
+      }
+    }
+
+    // Tất cả validation đã pass, bắt đầu loading và gọi API
     setLoading(true);
-    setError(null);
 
     try {
       const hasContent = newPostContent.trim().length > 0;
-      const hasImages = mediaFiles.length > 0;
-
-      if (!hasContent && !hasImages) {
-        setError("Vui lòng nhập nội dung hoặc thêm ảnh/video");
-        setLoading(false);
-        return;
-      }
+      const hasImages = imageFiles.length > 0;
 
       const postData = {
         content: hasContent ? newPostContent.trim() : '',
-        images: mediaFiles.filter(file => file.type.startsWith("image/")),
+        images: imageFiles, // Chỉ truyền ảnh, không truyền video
         privacy: postPrivacy,
       };
 
-      // Validate: backend requires at least content OR images
+      // Double check: backend requires at least content OR images
       if (!postData.content && (!postData.images || postData.images.length === 0)) {
         setError("Vui lòng nhập nội dung hoặc thêm ảnh/video");
         setLoading(false);
@@ -87,6 +100,7 @@ export default function CreatePostButton({ user, onPostCreated, show = true }) {
         content: postData.content,
         contentLength: postData.content.length,
         imageCount: postData.images.length,
+        imageFiles: postData.images.map(f => ({ name: f.name, size: f.size, type: f.type })),
         privacy: postPrivacy
       });
 
@@ -343,6 +357,33 @@ export default function CreatePostButton({ user, onPostCreated, show = true }) {
           maxFiles={8}
           addButtonLabel="Thêm ảnh hoặc video"
         />
+
+        {/* Hiển thị tổng dung lượng ảnh */}
+        {(() => {
+          const imageFiles = mediaFiles.filter(file => file.type.startsWith("image/"));
+          if (imageFiles.length === 0) return null;
+          
+          const totalSize = imageFiles.reduce((total, file) => total + file.size, 0);
+          const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+          const maxSizeMB = 20;
+          const isOverLimit = totalSize > (20 * 1024 * 1024);
+          
+          return (
+            <Box sx={{ mt: 1.5, mb: 1 }}>
+              <Typography 
+                variant="caption" 
+                sx={{ 
+                  color: isOverLimit ? 'error.main' : 'text.secondary', 
+                  fontSize: 12,
+                  fontWeight: isOverLimit ? 600 : 'normal'
+                }}
+              >
+                Tổng dung lượng ảnh: {totalSizeMB}MB / {maxSizeMB}MB
+                {isOverLimit && ' (Vượt quá giới hạn!)'}
+              </Typography>
+            </Box>
+          );
+        })()}
 
         {/* Privacy Selector */}
         <Box sx={{ mt: 2.5, mb: 2 }}>
