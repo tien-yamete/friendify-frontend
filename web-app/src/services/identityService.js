@@ -1,12 +1,21 @@
 import { getToken, removeToken, setToken } from "./localStorageService";
-import httpClient from "../configurations/httpClient";
-import { API, CONFIG } from "../configurations/configuration";
+import { API_ENDPOINTS, CONFIG } from "../config/apiConfig";
+import { apiFetch } from "./apiHelper";
 
+/**
+ * Login with username and password
+ * @param {string} username - Username or email
+ * @param {string} password - Password
+ * @returns {Promise<{data: any, status: number}>}
+ */
 export const logIn = async (username, password) => {
   try {
-    const response = await httpClient.post(API.LOGIN, {
-      username: username,
-      password: password,
+    const response = await apiFetch(API_ENDPOINTS.IDENTITY.LOGIN, {
+      method: 'POST',
+      body: JSON.stringify({
+        username: username,
+        password: password,
+      }),
     });
 
     const token = response.data?.result?.token || response.data?.token || response.data?.data?.token;
@@ -23,62 +32,93 @@ export const logIn = async (username, password) => {
   }
 };
 
+/**
+ * Logout current user
+ */
 export const logOut = () => {
   removeToken();
 };
 
+/**
+ * Check if user is authenticated
+ * @returns {boolean} True if token exists
+ */
 export const isAuthenticated = () => {
-  return getToken();
+  return !!getToken();
 };
 
+/**
+ * Register a new account
+ * @param {Object} userData - User registration data { username, email, password, firstName, lastName }
+ * @returns {Promise<{data: any, status: number}>}
+ */
 export const registerAccount = async ({ username, email, password, firstName, lastName}) => {
-  const response = await httpClient.post(API.REGISTER, {
-    username: username,
-    email: email,
-    password: password,
-    firstName: firstName,
-    lastName: lastName,
+  return apiFetch(API_ENDPOINTS.IDENTITY.REGISTER, {
+    method: 'POST',
+    body: JSON.stringify({
+      username,
+      email,
+      password,
+      firstName,
+      lastName,
+    }),
   });
-
-  return response;
 };
 
+/**
+ * Request password reset
+ * @param {string} email - User email
+ * @returns {Promise<{data: any, status: number}>}
+ */
 export const requestPasswordReset = async (email) => {
-  const response = await httpClient.post(API.FORGOT_PASSWORD, {
-    email: email,
+  return apiFetch(API_ENDPOINTS.IDENTITY.FORGOT_PASSWORD, {
+    method: 'POST',
+    body: JSON.stringify({ email }),
   });
+};
 
-  return response;
-}
-
+/**
+ * Reset password with OTP code
+ * @param {Object} resetData - Reset data { email, otpCode, newPassword }
+ * @returns {Promise<{data: any, status: number}>}
+ */
 export const resetPassword = async ({ email, otpCode, newPassword }) => {
-  const response = await httpClient.post(API.RESET_PASSWORD, {
-    email: email,
-    otpCode: otpCode,
-    newPassword: newPassword,
+  return apiFetch(API_ENDPOINTS.IDENTITY.RESET_PASSWORD, {
+    method: 'POST',
+    body: JSON.stringify({ email, otpCode, newPassword }),
   });
+};
 
-  return response;
-}
-
+/**
+ * Resend verification OTP
+ * @param {string} email - User email
+ * @returns {Promise<{data: any, status: number}>}
+ */
 export const resendVerification = async (email) => {
-  const response = await httpClient.post(API.RESEND_OTP, {
-    email: email,
+  return apiFetch(API_ENDPOINTS.IDENTITY.RESEND_OTP, {
+    method: 'POST',
+    body: JSON.stringify({ email }),
   });
+};
 
-  return response;
-}
-
+/**
+ * Verify user account with OTP code
+ * @param {Object} verifyData - Verification data { email, otpCode }
+ * @returns {Promise<{data: any, status: number}>}
+ */
 export const verifyUser = async ({ email, otpCode }) => {
-  const response = await httpClient.post(API.VERIFY_USER, {
-    email: email,
-    otpCode: otpCode,
+  return apiFetch(API_ENDPOINTS.IDENTITY.VERIFY_USER, {
+    method: 'POST',
+    body: JSON.stringify({ email, otpCode }),
   });
-  return response;
-}
+};
 
+/**
+ * Login with Google OAuth
+ */
 export const loginWithGoogle = () => {
-  const googleLoginUrl = `${CONFIG.API_GATEWAY}${CONFIG.IDENTITY_SERVICE}${API.GOOGLE_LOGIN}`;
+  // Use relative path to go through Vite proxy -> Gateway
+  const googleLoginUrl = `${CONFIG.API_GATEWAY}/identity/oauth2/authorization/google`;
   
   window.location.href = googleLoginUrl;
-}
+};
