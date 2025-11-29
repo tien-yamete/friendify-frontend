@@ -64,7 +64,10 @@ export default function MobileBottomNav() {
           backdropFilter: "saturate(180%) blur(20px)",
           position: "relative",
           "& .MuiBottomNavigationAction-root": {
-            minWidth: 60,
+            minWidth: 0,
+            maxWidth: "none",
+            flex: 1,
+            padding: "6px 0",
             color: "text.secondary",
             transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
             position: "relative",
