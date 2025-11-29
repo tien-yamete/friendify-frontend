@@ -2,11 +2,9 @@
 
 // Cấu hình API Gateway
 export const CONFIG = {
-  // Tất cả request đi qua Gateway ở port 8080
   API_GATEWAY: "/api/v1",
   
-  // WebSocket Endpoint (Đi qua Gateway vào Chat Service)
-  // Backend Config: server.servlet.context-path: /chat
+
   WS_URL: "/chat/ws", 
 };
 
@@ -15,7 +13,6 @@ export const getApiUrl = (endpoint) => {
   if (endpoint.startsWith('http')) {
     return endpoint;
   }
-  // Nếu endpoint chưa có prefix gateway 
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   if (cleanEndpoint.startsWith(CONFIG.API_GATEWAY)) {
     return cleanEndpoint;
@@ -47,8 +44,7 @@ export const API_ENDPOINTS = {
     SEARCH: '/profile/users/search',
     UPDATE_AVATAR: '/profile/users/avatar',
     UPDATE_BACKGROUND: '/profile/users/background',
-    // Backend Controller map: /{profileId} nhưng Gateway ép buộc prefix /users/
-    // Bạn CẦN sửa Backend: Thêm @RequestMapping("/users") vào ProfileController
+    GET_ALL_PROFILES: '/profile/users',
     GET_PROFILE: '/profile/users/:id', 
     BATCH_PROFILES: '/profile/internal/users/batch',
   },
@@ -56,11 +52,12 @@ export const API_ENDPOINTS = {
   // --- POST SERVICE (Port 8084) ---
   POST: {
     CREATE: '/post/create',
+    CREATE_JSON: '/post/json',
     MY_POSTS: '/post/my-posts',
     GET_BY_ID: '/post/:id',
     UPDATE: '/post/:id',
+    UPDATE_JSON: '/post/:id/json',
     DELETE: '/post/:id',
-    // Share dùng Query Param: ?content=...
     SHARE: '/post/share/:id', 
     SAVE: '/post/save/:id',
     UNSAVE: '/post/unsave/:id',
@@ -73,22 +70,55 @@ export const API_ENDPOINTS = {
     SAVED_COUNT: '/post/saved-count',
     SEARCH: '/post/search',
     PUBLIC_POSTS: '/post/public',
+    FEED: '/post/feed',
+    GROUP_POSTS: '/post/group/:id',
   },
 
   // --- INTERACTION SERVICE (Port 8088) ---
   INTERACTION: {
-    // Comments
     CREATE_COMMENT: '/interaction/comments',
-    GET_POST_COMMENTS: '/interaction/comments/post/:id', // :id = postId
+    GET_POST_COMMENTS: '/interaction/comments/post/:id',
+    GET_COMMENT_BY_ID: '/interaction/comments/:id',
+    GET_COMMENT_REPLIES: '/interaction/comments/:id/replies',
     UPDATE_COMMENT: '/interaction/comments/:id',
     DELETE_COMMENT: '/interaction/comments/:id',
     
-    // Likes
-    LIKE: '/interaction/api/likes', // POST { postId: "..." }
-    UNLIKE_BY_ID: '/interaction/api/likes/:id',
-    UNLIKE_POST: '/interaction/api/likes/post/:id',
-    UNLIKE_COMMENT: '/interaction/api/likes/comment/:id',
-    GET_POST_LIKES: '/interaction/api/likes/post/:id',
+    // Likes - Backend: @RequestMapping("/likes")
+    LIKE: '/interaction/likes',
+    UNLIKE_BY_ID: '/interaction/likes/:id',
+    UNLIKE_POST: '/interaction/likes/post/:id',
+    UNLIKE_COMMENT: '/interaction/likes/comment/:id',
+    GET_POST_LIKES: '/interaction/likes/post/:id',
+    
+    // Internal APIs
+    INTERNAL_LIKE_COUNT: '/interaction/internal/likes/post/:id/count',
+    INTERNAL_IS_LIKED: '/interaction/internal/likes/post/:id/is-liked',
+    INTERNAL_COMMENT_COUNT: '/interaction/internal/comments/post/:id/count',
+  },
+
+  // --- GROUP SERVICE (Port 8089) ---
+  // Gateway route: /api/v1/group/** -> backend: /group/groups/**
+  GROUP: {
+    CREATE: '/group/groups',
+    GET_ALL: '/group/groups',
+    UPDATE: '/group/groups/:id',
+    DELETE: '/group/groups/:id',
+    DETAIL: '/group/groups/:id',
+    UPLOAD_AVATAR: '/group/groups/:id/avatar',
+    UPLOAD_COVER: '/group/groups/:id/cover',
+    MY_GROUPS: '/group/groups/my-groups',
+    JOINED_GROUPS: '/group/groups/joined-groups',
+    SEARCH: '/group/groups/search',
+    JOIN: '/group/groups/:id/join',
+    LEAVE: '/group/groups/:id/leave',
+    MEMBERS: '/group/groups/:id/members',
+    ADD_MEMBER: '/group/groups/:id/members/:userId',
+    REMOVE_MEMBER: '/group/groups/:id/members/:userId',
+    UPDATE_MEMBER_ROLE: '/group/groups/:id/members/:userId/role',
+    JOIN_REQUESTS: '/group/groups/:id/join-requests',
+    MY_JOIN_REQUESTS: '/group/groups/my-join-requests',
+    PROCESS_JOIN_REQUEST: '/group/groups/:id/join-requests/:requestId/process',
+    CANCEL_JOIN_REQUEST: '/group/groups/:id/join-requests/:requestId',
   },
 
   // --- SOCIAL SERVICE (Port 8087) ---
@@ -102,6 +132,7 @@ export const API_ENDPOINTS = {
     SENT_REQUESTS: '/social/friendships/sent-requests',
     RECEIVED_REQUESTS: '/social/friendships/received-requests',
     SEARCH: '/social/friendships/search',
+    SUGGESTIONS: '/social/friendships/suggestions',
     
     // Follows
     FOLLOW: '/social/follows/:id', // POST
@@ -128,6 +159,8 @@ export const API_ENDPOINTS = {
     LEAVE_CONVERSATION: '/chat/conversations/:id/leave',
     ADD_ADMIN: '/chat/conversations/:id/admins',
     REMOVE_ADMIN: '/chat/conversations/:id/admins/:participantId',
+    PROMOTE_TO_ADMIN: '/chat/conversations/:id/admins',
+    DEMOTE_FROM_ADMIN: '/chat/conversations/:id/admins/:participantId',
     
     MESSAGES: '/chat/messages',
     MESSAGES_PAGINATED: '/chat/messages/paginated',
@@ -148,6 +181,10 @@ export const API_ENDPOINTS = {
 
   // --- NOTIFICATION SERVICE (Port 8083) ---
   NOTIFICATION: {
+    LIST: '/notification/notifications',
+    MARK_READ: '/notification/notifications/:id/read',
+    MARK_ALL_READ: '/notification/notifications/read-all',
+    UNREAD_COUNT: '/notification/notifications/unread-count',
     SEND_EMAIL: '/notification/email/send',
   }
 };

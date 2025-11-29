@@ -1,5 +1,6 @@
 // src/pages/Groups.jsx
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Card,
@@ -26,6 +27,9 @@ import {
   Select,
   MenuItem,
   Badge,
+  CircularProgress,
+  Switch,
+  FormControlLabel,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
@@ -38,195 +42,192 @@ import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import SettingsIcon from "@mui/icons-material/Settings";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import PageLayout from "./PageLayout";
-
-// Dữ liệu giả
-const mockMyGroups = [
-  {
-    id: 1,
-    name: "Lập trình viên Việt Nam",
-    avatar: "https://i.pravatar.cc/150?img=20",
-    members: 12500,
-    privacy: "public",
-    unreadPosts: 5,
-    lastActivity: "2 phút trước",
-    description: "Cộng đồng lập trình viên Việt Nam",
-  },
-  {
-    id: 2,
-    name: "Du lịch Hà Nội",
-    avatar: "https://i.pravatar.cc/150?img=21",
-    members: 8200,
-    privacy: "public",
-    unreadPosts: 0,
-    lastActivity: "1 giờ tr����c",
-    description: "Chia sẻ địa điểm du lịch tại Hà Nội",
-  },
-  {
-    id: 3,
-    name: "Ẩm thực Việt",
-    avatar: "https://i.pravatar.cc/150?img=22",
-    members: 15000,
-    privacy: "private",
-    unreadPosts: 12,
-    lastActivity: "30 phút trước",
-    description: "Khám phá ẩm thực Việt Nam",
-  },
-  {
-    id: 4,
-    name: "Nhiếp ảnh chuyên nghiệp",
-    avatar: "https://i.pravatar.cc/150?img=23",
-    members: 5600,
-    privacy: "private",
-    unreadPosts: 3,
-    lastActivity: "5 giờ trước",
-    description: "Cộng đồng nhiếp ảnh gia",
-  },
-];
-
-const mockSuggestedGroups = [
-  {
-    id: 5,
-    name: "React Developers Vietnam",
-    avatar: "https://i.pravatar.cc/150?img=24",
-    members: 8900,
-    privacy: "public",
-    mutualMembers: 45,
-    description: "Cộng đồng React developers tại Việt Nam",
-    category: "Công nghệ",
-  },
-  {
-    id: 6,
-    name: "Khởi nghiệp Startup",
-    avatar: "https://i.pravatar.cc/150?img=25",
-    members: 20000,
-    privacy: "public",
-    mutualMembers: 28,
-    description: "Hỗ trợ các startup Việt Nam",
-    category: "Kinh doanh",
-  },
-  {
-    id: 7,
-    name: "Yoga & Fitness",
-    avatar: "https://i.pravatar.cc/150?img=26",
-    members: 12300,
-    privacy: "public",
-    mutualMembers: 15,
-    description: "Cộng đồng yêu thích yoga và thể dục",
-    category: "Sức khỏe",
-  },
-  {
-    id: 8,
-    name: "Đầu tư chứng khoán",
-    avatar: "https://i.pravatar.cc/150?img=27",
-    members: 18500,
-    privacy: "private",
-    mutualMembers: 32,
-    description: "Chia sẻ kinh nghiệm đầu tư",
-    category: "Tài chính",
-  },
-  {
-    id: 9,
-    name: "Game thủ Việt Nam",
-    avatar: "https://i.pravatar.cc/150?img=28",
-    members: 25000,
-    privacy: "public",
-    mutualMembers: 50,
-    description: "Cộng đồng game thủ lớn nhất VN",
-    category: "Giải trí",
-  },
-  {
-    id: 10,
-    name: "Học tiếng Anh giao tiếp",
-    avatar: "https://i.pravatar.cc/150?img=29",
-    members: 16700,
-    privacy: "public",
-    mutualMembers: 22,
-    description: "Luyện tập tiếng Anh mỗi ngày",
-    category: "Giáo dục",
-  },
-];
-
-const mockDiscoverGroups = [
-  {
-    id: 11,
-    name: "Marketing Digital",
-    avatar: "https://i.pravatar.cc/150?img=30",
-    members: 14200,
-    privacy: "public",
-    trending: true,
-    growth: "+1.2k tuần này",
-    description: "Kiến thức marketing số",
-    category: "Marketing",
-  },
-  {
-    id: 12,
-    name: "Thiết kế UI/UX",
-    avatar: "https://i.pravatar.cc/150?img=31",
-    members: 9800,
-    privacy: "public",
-    trending: true,
-    growth: "+850 tuần này",
-    description: "Cộng đồng designer chuyên nghiệp",
-    category: "Thiết kế",
-  },
-  {
-    id: 13,
-    name: "Nuôi dạy con",
-    avatar: "https://i.pravatar.cc/150?img=32",
-    members: 22000,
-    privacy: "private",
-    trending: false,
-    growth: "+500 tuần này",
-    description: "Chia sẻ kinh nghiệm làm cha mẹ",
-    category: "Gia đình",
-  },
-  {
-    id: 14,
-    name: "Xe hơi Việt Nam",
-    avatar: "https://i.pravatar.cc/150?img=33",
-    members: 11500,
-    privacy: "public",
-    trending: true,
-    growth: "+720 tuần này",
-    description: "Cộng đồng yêu xe",
-    category: "Xe cộ",
-  },
-];
+import { useUser } from "../contexts/UserContext";
+import { 
+  getMyGroups, 
+  getJoinedGroups, 
+  getAllGroups,
+  searchGroups, 
+  createGroup, 
+  joinGroup, 
+  leaveGroup,
+  getMyJoinRequests,
+  cancelJoinRequest
+} from "../services/groupService";
+import { extractArrayFromResponse } from "../utils/apiHelper";
 
 export default function GroupPage() {
+  const navigate = useNavigate();
+  const { user: currentUser } = useUser();
   const [tabValue, setTabValue] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
-  const [myGroups, setMyGroups] = useState(mockMyGroups);
-  const [suggestedGroups, setSuggestedGroups] = useState(mockSuggestedGroups);
-  const [discoverGroups] = useState(mockDiscoverGroups);
+  const [myGroups, setMyGroups] = useState([]);
+  const [joinedGroups, setJoinedGroups] = useState([]);
+  const [suggestedGroups, setSuggestedGroups] = useState([]);
+  const [discoverGroups, setDiscoverGroups] = useState([]);
+  const [myJoinRequests, setMyJoinRequests] = useState([]); // Track join requests đã gửi
+  const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [newGroup, setNewGroup] = useState({
     name: "",
     description: "",
-    privacy: "public",
-    category: "",
+    privacy: "PUBLIC",
+    requiresApproval: false,
+    allowPosting: true,
+    onlyAdminCanPost: false,
+    moderationRequired: false,
   });
+
+  // Load join requests để track trạng thái
+  const loadJoinRequests = useCallback(async () => {
+    try {
+      const res = await getMyJoinRequests(1, 100);
+      const data = extractArrayFromResponse(res.data);
+      setMyJoinRequests(data.items || []);
+    } catch (error) {
+      console.error('Error loading join requests:', error);
+    }
+  }, []);
+
+  const loadGroups = useCallback(async () => {
+    setLoading(true);
+    try {
+      if (tabValue === 0) {
+        const [myGroupsRes, joinedGroupsRes] = await Promise.all([
+          getMyGroups(1, 20),
+          getJoinedGroups(1, 20)
+        ]);
+        const myGroupsData = extractArrayFromResponse(myGroupsRes.data);
+        const joinedGroupsData = extractArrayFromResponse(joinedGroupsRes.data);
+        setMyGroups(myGroupsData.items || []);
+        setJoinedGroups(joinedGroupsData.items || []);
+      } else if (tabValue === 1) {
+        // Suggested groups - search with empty keyword to get popular groups
+        const res = searchQuery.trim() 
+          ? await searchGroups(searchQuery.trim(), 1, 20)
+          : await getAllGroups(null, 1, 20);
+        const data = extractArrayFromResponse(res.data);
+        setSuggestedGroups(data.items || []);
+      } else if (tabValue === 2) {
+        // Discover groups - get all public/closed groups or search
+        const res = searchQuery.trim()
+          ? await searchGroups(searchQuery.trim(), 1, 20)
+          : await getAllGroups(null, 1, 20);
+        const data = extractArrayFromResponse(res.data);
+        setDiscoverGroups(data.items || []);
+      }
+    } catch (error) {
+      console.error('Error loading groups:', error);
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || "Không thể tải danh sách nhóm",
+        severity: "error"
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [tabValue, searchQuery]);
+
+  // Load join requests khi component mount
+  useEffect(() => {
+    loadJoinRequests();
+  }, [loadJoinRequests]);
+
+  useEffect(() => {
+    if (tabValue === 0) {
+      // Load my groups and joined groups for tab 0
+      loadGroups();
+    } else if (tabValue === 1 || tabValue === 2) {
+      // Debounce search for suggested and discover tabs
+      const timer = setTimeout(() => {
+        loadGroups();
+      }, searchQuery.trim() ? 500 : 0); // No delay if search is empty
+      return () => clearTimeout(timer);
+    }
+  }, [tabValue, searchQuery, loadGroups]);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
     setSearchQuery("");
   };
 
-  const handleJoinGroup = (id) => {
-    const group = [...suggestedGroups, ...discoverGroups].find((g) => g.id === id);
-    if (group) {
-      setMyGroups((prev) => [...prev, { ...group, unreadPosts: 0, lastActivity: "Vừa xong" }]);
-      setSuggestedGroups((prev) => prev.filter((g) => g.id !== id));
-      setSnackbar({ open: true, message: `Đã tham gia nhóm "${group.name}"!`, severity: "success" });
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
+
+  // Xác định trạng thái của group với user hiện tại
+  const getGroupStatus = (group) => {
+    if (!group) return { isOwner: false, isMember: false, hasPendingRequest: false, requestId: null };
+    
+    const currentUserId = currentUser?.id || currentUser?.userId;
+    
+    // Check if owner (so sánh ownerId với currentUserId hoặc từ myGroups)
+    const isOwner = group.ownerId === currentUserId || myGroups.some(g => g.id === group.id);
+    
+    // Check if member (từ joinedGroups hoặc group.isMember)
+    const isMember = joinedGroups.some(g => g.id === group.id) || group.isMember || false;
+    
+    // Check if has pending join request
+    const pendingRequest = myJoinRequests.find(
+      req => req.groupId === group.id && req.status === 'PENDING'
+    );
+    
+    return {
+      isOwner,
+      isMember,
+      hasPendingRequest: !!pendingRequest,
+      requestId: pendingRequest?.id || null
+    };
+  };
+
+  const handleJoinGroup = async (groupId) => {
+    try {
+      await joinGroup(groupId);
+      setSnackbar({ open: true, message: "Đã gửi yêu cầu tham gia nhóm!", severity: "success" });
+      await loadJoinRequests(); // Reload join requests
+      loadGroups(); // Reload groups
+    } catch (error) {
+      console.error('Error joining group:', error);
+      const errorMessage = error.response?.data?.message || "Không thể tham gia nhóm";
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: "error"
+      });
     }
   };
 
-  const handleLeaveGroup = (id) => {
-    const group = myGroups.find((g) => g.id === id);
-    if (group) {
-      setMyGroups((prev) => prev.filter((g) => g.id !== id));
-      setSnackbar({ open: true, message: `Đã rời khỏi nhóm "${group.name}"!`, severity: "info" });
+  const handleCancelJoinRequest = async (groupId, requestId) => {
+    try {
+      await cancelJoinRequest(groupId, requestId);
+      setSnackbar({ open: true, message: "Đã hủy yêu cầu tham gia nhóm!", severity: "info" });
+      await loadJoinRequests(); // Reload join requests
+      loadGroups(); // Reload groups
+    } catch (error) {
+      console.error('Error canceling join request:', error);
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || "Không thể hủy yêu cầu",
+        severity: "error"
+      });
+    }
+  };
+
+  const handleLeaveGroup = async (groupId) => {
+    try {
+      await leaveGroup(groupId);
+      setSnackbar({ open: true, message: "Đã rời khỏi nhóm!", severity: "info" });
+      await loadJoinRequests(); // Reload join requests
+      loadGroups(); // Reload groups
+    } catch (error) {
+      console.error('Error leaving group:', error);
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || "Không thể rời khỏi nhóm",
+        severity: "error"
+      });
     }
   };
 
@@ -235,36 +236,150 @@ export default function GroupPage() {
     setSnackbar({ open: true, message: "Đã xóa gợi ý này!", severity: "info" });
   };
 
-  const handleCreateGroup = () => {
+  const handleCreateGroup = async () => {
     if (!newGroup.name.trim()) {
       setSnackbar({ open: true, message: "Vui lòng nhập tên nhóm!", severity: "error" });
       return;
     }
-    
-    const group = {
-      id: Date.now(),
-      name: newGroup.name,
-      avatar: "https://i.pravatar.cc/150?img=" + Math.floor(Math.random() * 50),
-      members: 1,
-      privacy: newGroup.privacy,
-      unreadPosts: 0,
-      lastActivity: "Vừa tạo",
-      description: newGroup.description,
-    };
-
-    setMyGroups((prev) => [group, ...prev]);
-    setCreateDialogOpen(false);
-    setNewGroup({ name: "", description: "", privacy: "public", category: "" });
-    setSnackbar({ open: true, message: "Đã tạo nhóm mới thành công!", severity: "success" });
+    setCreating(true);
+    try {
+      const groupData = {
+        name: newGroup.name.trim(),
+        description: newGroup.description.trim() || null,
+        privacy: newGroup.privacy,
+        requiresApproval: newGroup.requiresApproval || false,
+        allowPosting: newGroup.allowPosting !== undefined ? newGroup.allowPosting : true,
+        onlyAdminCanPost: newGroup.onlyAdminCanPost || false,
+        moderationRequired: newGroup.moderationRequired || false,
+      };
+      const response = await createGroup(groupData);
+      const createdGroup = response.data?.result || response.data;
+      setMyGroups((prev) => [createdGroup, ...prev]);
+      setCreateDialogOpen(false);
+      setNewGroup({ 
+        name: "", 
+        description: "", 
+        privacy: "PUBLIC", 
+        requiresApproval: false,
+        allowPosting: true,
+        onlyAdminCanPost: false,
+        moderationRequired: false,
+      });
+      setSnackbar({ open: true, message: "Đã tạo nhóm mới thành công!", severity: "success" });
+    } catch (error) {
+      console.error('Error creating group:', error);
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || "Không thể tạo nhóm",
+        severity: "error"
+      });
+    } finally {
+      setCreating(false);
+    }
   };
 
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  const filteredMyGroups = myGroups.filter((group) =>
-    group.name.toLowerCase().includes(searchQuery.toLowerCase())
+  // Merge và loại bỏ duplicates dựa trên id (dùng Map để đảm bảo unique)
+  const allMyGroupsMap = new Map();
+  [...myGroups, ...joinedGroups].forEach((group) => {
+    if (group?.id && !allMyGroupsMap.has(group.id)) {
+      allMyGroupsMap.set(group.id, group);
+    }
+  });
+  const allMyGroups = Array.from(allMyGroupsMap.values());
+  
+  const filteredMyGroups = allMyGroups.filter((group) =>
+    group?.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const formatGroup = (group) => {
+    if (!group) return null;
+    return {
+      id: group.id,
+      name: group.name || "Không có tên",
+      avatar: group.avatarUrl || group.avatar || group.imageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(group.name || 'Group')}&background=667eea&color=fff&size=128`,
+      members: group.memberCount || group.members || 0,
+      privacy: group.privacy || "PUBLIC",
+      description: group.description || "",
+      createdDate: group.createdDate,
+      modifiedDate: group.modifiedDate,
+      isMember: group.isMember || false,
+      ownerId: group.ownerId,
+    };
+  };
+
+  // Render button dựa trên trạng thái group
+  const renderGroupActionButton = (group, formatted) => {
+    const status = getGroupStatus(group);
+    
+    // Tab 0: Nhóm của bạn - chỉ hiển thị "Rời nhóm" nếu không phải owner
+    if (tabValue === 0) {
+      if (status.isOwner) {
+        return (
+          <Button
+            variant="outlined"
+            size="small"
+            disabled
+            sx={{ mt: "auto" }}
+          >
+            Bạn là chủ nhóm
+          </Button>
+        );
+      }
+      return (
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={() => handleLeaveGroup(formatted.id)}
+          sx={{ mt: "auto" }}
+        >
+          Rời nhóm
+        </Button>
+      );
+    }
+    
+    // Tab 1 và 2: Gợi ý và Khám phá
+    if (status.isMember) {
+      return (
+        <Button
+          variant="outlined"
+          size="small"
+          disabled
+          sx={{ mt: "auto" }}
+        >
+          Đã tham gia
+        </Button>
+      );
+    }
+    
+    if (status.hasPendingRequest) {
+      return (
+        <Button
+          variant="outlined"
+          color="warning"
+          size="small"
+          onClick={() => handleCancelJoinRequest(formatted.id, status.requestId)}
+          sx={{ mt: "auto" }}
+        >
+          Đã xin tham gia
+        </Button>
+      );
+    }
+    
+    return (
+      <Button
+        variant="contained"
+        size="small"
+        onClick={() => handleJoinGroup(formatted.id)}
+        sx={{ mt: "auto" }}
+      >
+        Tham gia
+      </Button>
+    );
+  };
 
   return (
     <PageLayout>
@@ -291,50 +406,21 @@ export default function GroupPage() {
               bgcolor: "background.paper",
             })}
           >
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: { xs: 1.5, sm: 2 }, flexWrap: "wrap", gap: { xs: 1, sm: 2 } }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, sm: 2 } }}>
-                <Typography
-                  sx={{
-                    fontSize: { xs: 18, sm: 26 },
-                    fontWeight: 700,
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                  }}
-                >
-                  Nhóm
-                </Typography>
-                <Chip
-                  icon={<GroupsIcon sx={{ fontSize: { xs: 14, sm: 18 } }} />}
-                  label={`${myGroups.length} nhóm`}
-                  size="small"
-                  sx={{
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    color: "white",
-                    fontWeight: 600,
-                    height: { xs: 24, sm: 28 },
-                    fontSize: { xs: 11, sm: 13 },
-                  }}
-                />
-              </Box>
-
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+              <Typography variant="h5" sx={{ fontWeight: 700, fontSize: { xs: 18, sm: 24 } }}>
+                Nhóm
+              </Typography>
               <Button
                 variant="contained"
-                startIcon={<AddIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />}
+                startIcon={<AddIcon />}
                 onClick={() => setCreateDialogOpen(true)}
-                size="small"
                 sx={{
+                  borderRadius: 2,
                   textTransform: "none",
-                  fontWeight: 600,
-                  borderRadius: { xs: 2, sm: 3 },
                   px: { xs: 1.5, sm: 3 },
-                  py: { xs: 0.5, sm: 0.75 },
+                  py: { xs: 0.75, sm: 1 },
                   fontSize: { xs: 12, sm: 14 },
-                  minWidth: { xs: "auto", sm: "auto" },
-                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  "&:hover": {
-                    background: "linear-gradient(135deg, #5568d3 0%, #63428a 100%)",
-                  },
+                  fontWeight: 600,
                 }}
               >
                 <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>Tạo nhóm mới</Box>
@@ -370,575 +456,313 @@ export default function GroupPage() {
               <Tab label="Gợi ý" />
               <Tab label="Khám phá" />
             </Tabs>
+
+            {/* Search Bar */}
+            <Box sx={{ mt: 2 }}>
+              <TextField
+                fullWidth
+                placeholder={tabValue === 0 ? "Tìm kiếm trong nhóm của bạn..." : "Tìm kiếm nhóm..."}
+                value={searchQuery}
+                onChange={handleSearchChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                  },
+                }}
+              />
+            </Box>
           </Card>
 
-          {/* Tab 0: My Groups */}
-          {tabValue === 0 && (
-            <Box>
-              <Card
-                elevation={0}
-                sx={(t) => ({
-                  borderRadius: { xs: 2, sm: 4 },
-                  p: { xs: 1.5, sm: 2.5 },
-                  mb: { xs: 2, sm: 3 },
-                  boxShadow: t.shadows[1],
-                  border: "1px solid",
-                  borderColor: "divider",
-                  bgcolor: "background.paper",
-                })}
-              >
-                <TextField
-                  fullWidth
-                  placeholder="Tìm kiếm nhóm của bạn..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  size="small"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon color="action" sx={{ fontSize: { xs: 20, sm: 24 } }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: { xs: 2, sm: 3 },
-                      bgcolor: (t) =>
-                        t.palette.mode === "dark" ? "rgba(255,255,255,0.04)" : "background.default",
-                      fontSize: { xs: 13, sm: 15 },
-                      "& fieldset": { borderColor: "divider" },
-                      "&:hover fieldset": { borderColor: "primary.main" },
-                      "&.Mui-focused fieldset": { borderColor: "primary.main", borderWidth: 2 },
-                    },
-                  }}
-                />
-              </Card>
-
-              {filteredMyGroups.length === 0 ? (
-                <Card
-                  elevation={0}
-                  sx={(t) => ({
-                    borderRadius: { xs: 2, sm: 4 },
-                    p: { xs: 3, sm: 6 },
-                    textAlign: "center",
-                    boxShadow: t.shadows[1],
-                    border: "1px solid",
-                    borderColor: "divider",
-                    bgcolor: "background.paper",
-                  })}
-                >
-                  <GroupsIcon sx={{ fontSize: { xs: 48, sm: 64 }, color: "text.disabled", mb: { xs: 1.5, sm: 2 } }} />
-                  <Typography variant="h6" color="text.secondary" mb={2} sx={{ fontSize: { xs: 16, sm: 20 } }}>
-                    Không tìm thấy nhóm nào
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    startIcon={<AddIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />}
-                    onClick={() => setCreateDialogOpen(true)}
-                    size="small"
-                    sx={{
-                      textTransform: "none",
-                      fontWeight: 600,
-                      borderRadius: { xs: 2, sm: 3 },
-                      px: { xs: 2, sm: 3 },
-                      py: { xs: 1, sm: 1.25 },
-                      fontSize: { xs: 13, sm: 15 },
-                      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                      "&:hover": {
-                        background: "linear-gradient(135deg, #5568d3 0%, #63428a 100%)",
-                      },
-                    }}
-                  >
-                    Tạo nhóm mới
-                  </Button>
-                </Card>
-              ) : (
-                <Grid container spacing={{ xs: 1.5, sm: 2.5 }}>
-                  {filteredMyGroups.map((group) => (
-                    <Grid item xs={12} sm={12} md={6} key={group.id}>
-                      <Card
-                        elevation={0}
-                        sx={(t) => ({
-                          borderRadius: { xs: 2, sm: 4 },
-                          p: { xs: 1.5, sm: 3 },
-                          boxShadow: t.shadows[1],
-                          border: "1px solid",
-                          borderColor: "divider",
-                          bgcolor: "background.paper",
-                          transition: "all 0.3s ease",
-                          "&:hover": {
-                            boxShadow: t.shadows[4],
-                            transform: { xs: "none", sm: "translateY(-4px)" },
-                          },
-                        })}
-                      >
-                        <Box sx={{ display: "flex", alignItems: "flex-start", mb: { xs: 1.5, sm: 2 } }}>
-                          <Badge
-                            badgeContent={group.unreadPosts}
-                            color="error"
-                            max={99}
-                            sx={{
-                              "& .MuiBadge-badge": {
-                                top: { xs: 4, sm: 8 },
-                                right: { xs: 4, sm: 8 },
-                                fontSize: { xs: 9, sm: 11 },
-                                minWidth: { xs: 16, sm: 20 },
-                                height: { xs: 16, sm: 20 },
-                              },
-                            }}
-                          >
-                            <Avatar
-                              src={group.avatar}
+          {loading ? (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <>
+              {tabValue === 0 && (
+                <Box>
+                  {filteredMyGroups.length === 0 ? (
+                    <Card sx={{ p: 3, textAlign: "center" }}>
+                      <Typography variant="body1" color="text.secondary">
+                        Bạn chưa tham gia nhóm nào
+                      </Typography>
+                    </Card>
+                  ) : (
+                    <Grid container spacing={2}>
+                      {filteredMyGroups.map((group) => {
+                        const formatted = formatGroup(group);
+                        if (!formatted || !formatted.id) return null;
+                        return (
+                          <Grid item xs={12} sm={6} md={4} key={formatted.id}>
+                            <Card
                               sx={{
-                                width: { xs: 50, sm: 72 },
-                                height: { xs: 50, sm: 72 },
-                                mr: { xs: 1.5, sm: 2 },
-                                border: { xs: "2px solid", sm: "3px solid" },
-                                borderColor: "divider",
+                                p: 2,
+                                height: "100%",
+                                display: "flex",
+                                flexDirection: "column",
+                                cursor: "pointer",
+                                "&:hover": { boxShadow: 3 },
                               }}
-                            />
-                          </Badge>
-                          <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Typography variant="h6" fontWeight={700} mb={0.5} noWrap sx={{ fontSize: { xs: 14, sm: 18 } }}>
-                              {group.name}
-                            </Typography>
-                            <Stack direction="row" spacing={0.5} alignItems="center" mb={0.5} flexWrap="wrap" sx={{ gap: 0.5 }}>
-                              <Chip
-                                icon={group.privacy === "public" ? <PublicIcon sx={{ fontSize: { xs: 12, sm: 14 } }} /> : <LockIcon sx={{ fontSize: { xs: 12, sm: 14 } }} />}
-                                label={group.privacy === "public" ? "Công khai" : "Riêng tư"}
-                                size="small"
-                                sx={{ height: { xs: 18, sm: 24 }, fontSize: { xs: 9, sm: 12 }, "& .MuiChip-label": { px: { xs: 0.5, sm: 1 } } }}
-                              />
-                              <Chip
-                                icon={<PeopleIcon sx={{ fontSize: { xs: 12, sm: 14 } }} />}
-                                label={`${group.members.toLocaleString()}`}
-                                size="small"
-                                sx={{ height: { xs: 18, sm: 24 }, fontSize: { xs: 9, sm: 12 }, "& .MuiChip-label": { px: { xs: 0.5, sm: 1 } } }}
-                              />
-                            </Stack>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: 9, sm: 12 } }}>
-                              Hoạt động: {group.lastActivity}
-                            </Typography>
-                          </Box>
-                          <IconButton size="small" sx={{ display: { xs: "none", sm: "inline-flex" } }}>
-                            <SettingsIcon />
-                          </IconButton>
-                        </Box>
-
-                        <Typography variant="body2" color="text.secondary" mb={1.5} sx={{ fontSize: { xs: 12, sm: 14 }, display: { xs: "-webkit-box", sm: "block" }, WebkitLineClamp: { xs: 2, sm: "none" }, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                          {group.description}
-                        </Typography>
-
-                        <Divider sx={{ my: { xs: 1.5, sm: 2 } }} />
-
-                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-                          <Button
-                            fullWidth
-                            variant="outlined"
-                            startIcon={<NotificationsActiveIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />}
-                            size="small"
-                            sx={{
-                              textTransform: "none",
-                              fontWeight: 600,
-                              borderRadius: { xs: 2, sm: 2.5 },
-                              borderColor: "divider",
-                              color: "text.secondary",
-                              fontSize: { xs: 12, sm: 14 },
-                              py: { xs: 0.75, sm: 1 },
-                              "&:hover": {
-                                borderColor: "primary.main",
-                                color: "primary.main",
-                                bgcolor: "rgba(102, 126, 234, 0.04)",
-                              },
-                            }}
-                          >
-                            Xem nhóm
-                          </Button>
-                          <Button
-                            fullWidth
-                            variant="outlined"
-                            startIcon={<ExitToAppIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />}
-                            onClick={() => handleLeaveGroup(group.id)}
-                            size="small"
-                            sx={{
-                              textTransform: "none",
-                              fontWeight: 600,
-                              borderRadius: { xs: 2, sm: 2.5 },
-                              borderColor: "divider",
-                              color: "text.secondary",
-                              fontSize: { xs: 12, sm: 14 },
-                              py: { xs: 0.75, sm: 1 },
-                              "&:hover": {
-                                borderColor: "error.main",
-                                color: "error.main",
-                                bgcolor: "rgba(211, 47, 47, 0.04)",
-                              },
-                            }}
-                          >
-                            Rời nhóm
-                          </Button>
-                        </Stack>
-                      </Card>
+                              onClick={() => navigate(`/groups/${formatted.id}`)}
+                            >
+                              <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                                <Avatar src={formatted.avatar} sx={{ width: 56, height: 56, mr: 2 }} />
+                                <Box sx={{ flex: 1 }}>
+                                  <Typography variant="h6" sx={{ fontSize: 16, fontWeight: 600, mb: 0.5 }}>
+                                    {formatted.name}
+                                  </Typography>
+                                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                    {formatted.privacy === "PUBLIC" ? (
+                                      <PublicIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                                    ) : (
+                                      <LockIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                                    )}
+                                    <Typography variant="caption" color="text.secondary">
+                                      {formatted.members} thành viên
+                                    </Typography>
+                                  </Box>
+                                </Box>
+                              </Box>
+                              {formatted.description && (
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2, flex: 1 }}>
+                                  {formatted.description}
+                                </Typography>
+                              )}
+                              <Box onClick={(e) => e.stopPropagation()}>
+                                {renderGroupActionButton(group, formatted)}
+                              </Box>
+                            </Card>
+                          </Grid>
+                        );
+                      })}
                     </Grid>
-                  ))}
-                </Grid>
+                  )}
+                </Box>
               )}
-            </Box>
-          )}
 
-          {/* Tab 1: Suggested Groups */}
-          {tabValue === 1 && (
-            <Box>
-              <Grid container spacing={{ xs: 1.5, sm: 2.5 }}>
-                {suggestedGroups.map((group) => (
-                  <Grid item xs={12} sm={6} md={4} key={group.id}>
-                    <Card
-                      elevation={0}
-                      sx={(t) => ({
-                        borderRadius: { xs: 2, sm: 4 },
-                        p: { xs: 1.5, sm: 2.5 },
-                        boxShadow: t.shadows[1],
-                        border: "1px solid",
-                        borderColor: "divider",
-                        bgcolor: "background.paper",
-                        transition: "all 0.3s ease",
-                        "&:hover": {
-                          boxShadow: t.shadows[4],
-                          transform: { xs: "none", sm: "translateY(-4px)" },
-                        },
-                      })}
-                    >
-                      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                        <Avatar
-                          src={group.avatar}
-                          sx={{
-                            width: { xs: 70, sm: 96 },
-                            height: { xs: 70, sm: 96 },
-                            mb: { xs: 1.5, sm: 2 },
-                            border: { xs: "2px solid", sm: "3px solid" },
-                            borderColor: "divider",
-                          }}
-                        />
-                        <Typography variant="h6" fontWeight={700} mb={0.5} textAlign="center" sx={{ fontSize: { xs: 14, sm: 18 }, px: 1 }}>
-                          {group.name}
-                        </Typography>
-                        <Chip label={group.category} size="small" sx={{ mb: 1, fontSize: { xs: 9, sm: 12 }, height: { xs: 20, sm: 24 } }} />
-                        <Stack direction="row" spacing={0.5} mb={1} flexWrap="wrap" justifyContent="center" sx={{ gap: 0.5 }}>
-                          <Chip
-                            icon={group.privacy === "public" ? <PublicIcon sx={{ fontSize: { xs: 12, sm: 14 } }} /> : <LockIcon sx={{ fontSize: { xs: 12, sm: 14 } }} />}
-                            label={group.privacy === "public" ? "Công khai" : "Riêng tư"}
-                            size="small"
-                            sx={{ height: { xs: 18, sm: 22 }, fontSize: { xs: 9, sm: 11 }, "& .MuiChip-label": { px: { xs: 0.5, sm: 1 } } }}
-                          />
-                          <Chip
-                            icon={<PeopleIcon sx={{ fontSize: { xs: 12, sm: 14 } }} />}
-                            label={group.members.toLocaleString()}
-                            size="small"
-                            sx={{ height: { xs: 18, sm: 22 }, fontSize: { xs: 9, sm: 11 }, "& .MuiChip-label": { px: { xs: 0.5, sm: 1 } } }}
-                          />
-                        </Stack>
-                        <Typography variant="caption" color="text.secondary" mb={1} sx={{ fontSize: { xs: 10, sm: 12 } }}>
-                          {group.mutualMembers} bạn chung
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          textAlign="center"
-                          mb={2}
-                          sx={{ minHeight: { xs: 28, sm: 40 }, fontSize: { xs: 11, sm: 14 }, px: 1, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
-                        >
-                          {group.description}
-                        </Typography>
-
-                        <Stack direction="row" spacing={1} width="100%">
-                          <Button
-                            fullWidth
-                            variant="contained"
-                            onClick={() => handleJoinGroup(group.id)}
-                            size="small"
-                            sx={{
-                              textTransform: "none",
-                              fontWeight: 600,
-                              borderRadius: { xs: 2, sm: 2.5 },
-                              fontSize: { xs: 12, sm: 14 },
-                              py: { xs: 0.75, sm: 1 },
-                              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                              "&:hover": {
-                                background: "linear-gradient(135deg, #5568d3 0%, #63428a 100%)",
-                              },
-                            }}
-                          >
-                            Tham gia
-                          </Button>
-                          <IconButton
-                            onClick={() => handleRemoveSuggestion(group.id)}
-                            size="small"
-                            sx={{
-                              borderRadius: { xs: 2, sm: 2.5 },
-                              border: "1px solid",
-                              borderColor: "divider",
-                              width: { xs: 36, sm: 40 },
-                              height: { xs: 36, sm: 40 },
-                              "&:hover": { bgcolor: "action.hover" },
-                            }}
-                          >
-                            <ExitToAppIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
-                          </IconButton>
-                        </Stack>
-                      </Box>
+              {tabValue === 1 && (
+                <Box>
+                  {loading ? (
+                    <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+                      <CircularProgress />
+                    </Box>
+                  ) : suggestedGroups.length === 0 ? (
+                    <Card sx={{ p: 3, textAlign: "center" }}>
+                      <Typography variant="body1" color="text.secondary">
+                        {searchQuery.trim() ? "Không tìm thấy nhóm nào" : "Không có nhóm gợi ý"}
+                      </Typography>
                     </Card>
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-          )}
-
-          {/* Tab 2: Discover Groups */}
-          {tabValue === 2 && (
-            <Box>
-              <Grid container spacing={{ xs: 1.5, sm: 2.5 }}>
-                {discoverGroups.map((group) => (
-                  <Grid item xs={12} sm={6} md={4} key={group.id}>
-                    <Card
-                      elevation={0}
-                      sx={(t) => ({
-                        borderRadius: { xs: 2, sm: 4 },
-                        p: { xs: 1.5, sm: 2.5 },
-                        boxShadow: t.shadows[1],
-                        border: "1px solid",
-                        borderColor: "divider",
-                        bgcolor: "background.paper",
-                        position: "relative",
-                        transition: "all 0.3s ease",
-                        "&:hover": {
-                          boxShadow: t.shadows[4],
-                          transform: { xs: "none", sm: "translateY(-4px)" },
-                        },
+                  ) : (
+                    <Grid container spacing={2}>
+                      {suggestedGroups.map((group) => {
+                        const formatted = formatGroup(group);
+                        if (!formatted || !formatted.id) return null;
+                        return (
+                          <Grid item xs={12} sm={6} md={4} key={`suggested-${formatted.id}`}>
+                            <Card
+                              sx={{
+                                p: 2,
+                                height: "100%",
+                                display: "flex",
+                                flexDirection: "column",
+                                cursor: "pointer",
+                                "&:hover": { boxShadow: 3 },
+                              }}
+                              onClick={() => navigate(`/groups/${formatted.id}`)}
+                            >
+                              <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                                <Avatar src={formatted.avatar} sx={{ width: 56, height: 56, mr: 2 }} />
+                                <Box sx={{ flex: 1 }}>
+                                  <Typography variant="h6" sx={{ fontSize: 16, fontWeight: 600, mb: 0.5 }}>
+                                    {formatted.name}
+                                  </Typography>
+                                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                    {formatted.privacy === "PUBLIC" ? (
+                                      <PublicIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                                    ) : (
+                                      <LockIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                                    )}
+                                    <Typography variant="caption" color="text.secondary">
+                                      {formatted.members} thành viên
+                                    </Typography>
+                                  </Box>
+                                </Box>
+                              </Box>
+                              {formatted.description && (
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2, flex: 1 }}>
+                                  {formatted.description}
+                                </Typography>
+                              )}
+                              {renderGroupActionButton(group, formatted)}
+                            </Card>
+                          </Grid>
+                        );
                       })}
-                    >
-                      {group.trending && (
-                        <Chip
-                          icon={<TrendingUpIcon sx={{ fontSize: { xs: 12, sm: 16 } }} />}
-                          label="Đang thịnh hành"
-                          size="small"
-                          color="error"
-                          sx={{
-                            position: "absolute",
-                            top: { xs: 6, sm: 12 },
-                            right: { xs: 6, sm: 12 },
-                            fontWeight: 600,
-                            fontSize: { xs: 8, sm: 11 },
-                            height: { xs: 18, sm: 24 },
-                            "& .MuiChip-label": { px: { xs: 0.5, sm: 1 } },
-                          }}
-                        />
-                      )}
+                    </Grid>
+                  )}
+                </Box>
+              )}
 
-                      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                        <Avatar
-                          src={group.avatar}
-                          sx={{
-                            width: { xs: 70, sm: 96 },
-                            height: { xs: 70, sm: 96 },
-                            mb: { xs: 1.5, sm: 2 },
-                            border: { xs: "2px solid", sm: "3px solid" },
-                            borderColor: "divider",
-                          }}
-                        />
-                        <Typography variant="h6" fontWeight={700} mb={0.5} textAlign="center" sx={{ fontSize: { xs: 14, sm: 18 }, px: 1 }}>
-                          {group.name}
-                        </Typography>
-                        <Chip label={group.category} size="small" sx={{ mb: 1, fontSize: { xs: 9, sm: 12 }, height: { xs: 20, sm: 24 } }} />
-                        <Stack direction="row" spacing={0.5} mb={1} flexWrap="wrap" justifyContent="center" sx={{ gap: 0.5 }}>
-                          <Chip
-                            icon={group.privacy === "public" ? <PublicIcon sx={{ fontSize: { xs: 12, sm: 14 } }} /> : <LockIcon sx={{ fontSize: { xs: 12, sm: 14 } }} />}
-                            label={group.privacy === "public" ? "Công khai" : "Riêng tư"}
-                            size="small"
-                            sx={{ height: { xs: 18, sm: 22 }, fontSize: { xs: 9, sm: 11 }, "& .MuiChip-label": { px: { xs: 0.5, sm: 1 } } }}
-                          />
-                          <Chip
-                            icon={<PeopleIcon sx={{ fontSize: { xs: 12, sm: 14 } }} />}
-                            label={group.members.toLocaleString()}
-                            size="small"
-                            sx={{ height: { xs: 18, sm: 22 }, fontSize: { xs: 9, sm: 11 }, "& .MuiChip-label": { px: { xs: 0.5, sm: 1 } } }}
-                          />
-                        </Stack>
-                        <Chip
-                          icon={<TrendingUpIcon sx={{ fontSize: { xs: 12, sm: 14 } }} />}
-                          label={group.growth}
-                          size="small"
-                          color="success"
-                          sx={{ mb: 1, fontSize: { xs: 9, sm: 11 }, height: { xs: 18, sm: 24 }, "& .MuiChip-label": { px: { xs: 0.5, sm: 1 } } }}
-                        />
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          textAlign="center"
-                          mb={2}
-                          sx={{ minHeight: { xs: 28, sm: 40 }, fontSize: { xs: 11, sm: 14 }, px: 1, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
-                        >
-                          {group.description}
-                        </Typography>
-
-                        <Button
-                          fullWidth
-                          variant="contained"
-                          onClick={() => handleJoinGroup(group.id)}
-                          size="small"
-                          sx={{
-                            textTransform: "none",
-                            fontWeight: 600,
-                            borderRadius: { xs: 2, sm: 2.5 },
-                            fontSize: { xs: 12, sm: 14 },
-                            py: { xs: 0.75, sm: 1 },
-                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                            "&:hover": {
-                              background: "linear-gradient(135deg, #5568d3 0%, #63428a 100%)",
-                            },
-                          }}
-                        >
-                          Tham gia nhóm
-                        </Button>
-                      </Box>
+              {tabValue === 2 && (
+                <Box>
+                  {loading ? (
+                    <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+                      <CircularProgress />
+                    </Box>
+                  ) : discoverGroups.length === 0 ? (
+                    <Card sx={{ p: 3, textAlign: "center" }}>
+                      <Typography variant="body1" color="text.secondary">
+                        {searchQuery.trim() ? "Không tìm thấy nhóm nào" : "Không có nhóm để khám phá"}
+                      </Typography>
                     </Card>
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
+                  ) : (
+                    <Grid container spacing={2}>
+                      {discoverGroups.map((group) => {
+                        const formatted = formatGroup(group);
+                        if (!formatted || !formatted.id) return null;
+                        return (
+                          <Grid item xs={12} sm={6} md={4} key={`discover-${formatted.id}`}>
+                            <Card
+                              sx={{
+                                p: 2,
+                                height: "100%",
+                                display: "flex",
+                                flexDirection: "column",
+                                cursor: "pointer",
+                                "&:hover": { boxShadow: 3 },
+                              }}
+                              onClick={() => navigate(`/groups/${formatted.id}`)}
+                            >
+                              <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                                <Avatar src={formatted.avatar} sx={{ width: 56, height: 56, mr: 2 }} />
+                                <Box sx={{ flex: 1 }}>
+                                  <Typography variant="h6" sx={{ fontSize: 16, fontWeight: 600, mb: 0.5 }}>
+                                    {formatted.name}
+                                  </Typography>
+                                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                    {formatted.privacy === "PUBLIC" ? (
+                                      <PublicIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                                    ) : (
+                                      <LockIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                                    )}
+                                    <Typography variant="caption" color="text.secondary">
+                                      {formatted.members} thành viên
+                                    </Typography>
+                                  </Box>
+                                </Box>
+                              </Box>
+                              {formatted.description && (
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2, flex: 1 }}>
+                                  {formatted.description}
+                                </Typography>
+                              )}
+                              <Box onClick={(e) => e.stopPropagation()}>
+                                {renderGroupActionButton(group, formatted)}
+                              </Box>
+                            </Card>
+                          </Grid>
+                        );
+                      })}
+                    </Grid>
+                  )}
+                </Box>
+              )}
+            </>
           )}
         </Box>
       </Box>
 
       {/* Create Group Dialog */}
-      <Dialog
-        open={createDialogOpen}
-        onClose={() => setCreateDialogOpen(false)}
-        maxWidth="sm"
-        fullWidth
-        fullScreen={(theme) => theme.breakpoints.down('sm')}
-        PaperProps={{
-          sx: { borderRadius: { xs: 0, sm: 4 } },
-        }}
-      >
-        <DialogTitle sx={{ fontWeight: 700, pb: 1, fontSize: { xs: 18, sm: 24 }, px: { xs: 2, sm: 3 }, pt: { xs: 2, sm: 3 } }}>Tạo nhóm mới</DialogTitle>
-        <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
-          <Stack spacing={{ xs: 2, sm: 3 }} sx={{ mt: { xs: 1, sm: 2 } }}>
-            <TextField
-              fullWidth
-              label="Tên nhóm"
-              placeholder="Nhập tên nhóm..."
-              value={newGroup.name}
-              onChange={(e) => setNewGroup({ ...newGroup, name: e.target.value })}
-              size="small"
-              sx={{
-                "& .MuiOutlinedInput-root": { borderRadius: { xs: 2, sm: 3 }, fontSize: { xs: 14, sm: 16 } },
-                "& .MuiInputLabel-root": { fontSize: { xs: 14, sm: 16 } },
-              }}
-            />
-            <TextField
-              fullWidth
-              label="Mô tả"
-              placeholder="Mô tả về nhóm..."
-              multiline
-              rows={3}
-              value={newGroup.description}
-              onChange={(e) => setNewGroup({ ...newGroup, description: e.target.value })}
-              size="small"
-              sx={{
-                "& .MuiOutlinedInput-root": { borderRadius: { xs: 2, sm: 3 }, fontSize: { xs: 14, sm: 16 } },
-                "& .MuiInputLabel-root": { fontSize: { xs: 14, sm: 16 } },
-              }}
-            />
-            <FormControl fullWidth size="small">
-              <InputLabel sx={{ fontSize: { xs: 14, sm: 16 } }}>Quyền riêng tư</InputLabel>
-              <Select
-                value={newGroup.privacy}
-                onChange={(e) => setNewGroup({ ...newGroup, privacy: e.target.value })}
-                label="Quyền riêng tư"
-                sx={{ borderRadius: { xs: 2, sm: 3 }, fontSize: { xs: 14, sm: 16 } }}
-              >
-                <MenuItem value="public">
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <PublicIcon fontSize="small" sx={{ fontSize: { xs: 18, sm: 20 } }} />
-                    <Box>
-                      <Typography variant="body2" fontWeight={600} sx={{ fontSize: { xs: 13, sm: 14 } }}>
-                        Công khai
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: 11, sm: 12 } }}>
-                        Bất kỳ ai cũng có thể tham gia
-                      </Typography>
-                    </Box>
-                  </Box>
-                </MenuItem>
-                <MenuItem value="private">
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <LockIcon fontSize="small" sx={{ fontSize: { xs: 18, sm: 20 } }} />
-                    <Box>
-                      <Typography variant="body2" fontWeight={600} sx={{ fontSize: { xs: 13, sm: 14 } }}>
-                        Riêng tư
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: 11, sm: 12 } }}>
-                        Cần phê duyệt để tham gia
-                      </Typography>
-                    </Box>
-                  </Box>
-                </MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl fullWidth size="small">
-              <InputLabel sx={{ fontSize: { xs: 14, sm: 16 } }}>Danh mục</InputLabel>
-              <Select
-                value={newGroup.category}
-                onChange={(e) => setNewGroup({ ...newGroup, category: e.target.value })}
-                label="Danh mục"
-                sx={{ borderRadius: { xs: 2, sm: 3 }, fontSize: { xs: 14, sm: 16 } }}
-              >
-                <MenuItem value="Công nghệ" sx={{ fontSize: { xs: 13, sm: 15 } }}>Công nghệ</MenuItem>
-                <MenuItem value="Kinh doanh" sx={{ fontSize: { xs: 13, sm: 15 } }}>Kinh doanh</MenuItem>
-                <MenuItem value="Giáo dục" sx={{ fontSize: { xs: 13, sm: 15 } }}>Giáo dục</MenuItem>
-                <MenuItem value="Giải trí" sx={{ fontSize: { xs: 13, sm: 15 } }}>Giải trí</MenuItem>
-                <MenuItem value="Thể thao" sx={{ fontSize: { xs: 13, sm: 15 } }}>Thể thao</MenuItem>
-                <MenuItem value="Nghệ thuật" sx={{ fontSize: { xs: 13, sm: 15 } }}>Nghệ thuật</MenuItem>
-                <MenuItem value="Du lịch" sx={{ fontSize: { xs: 13, sm: 15 } }}>Du lịch</MenuItem>
-                <MenuItem value="Ẩm thực" sx={{ fontSize: { xs: 13, sm: 15 } }}>Ẩm thực</MenuItem>
-                <MenuItem value="Khác" sx={{ fontSize: { xs: 13, sm: 15 } }}>Khác</MenuItem>
-              </Select>
-            </FormControl>
-          </Stack>
+      <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Tạo nhóm mới</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            label="Tên nhóm"
+            value={newGroup.name}
+            onChange={(e) => setNewGroup({ ...newGroup, name: e.target.value })}
+            margin="normal"
+            required
+          />
+          <TextField
+            fullWidth
+            label="Mô tả"
+            value={newGroup.description}
+            onChange={(e) => setNewGroup({ ...newGroup, description: e.target.value })}
+            margin="normal"
+            multiline
+            rows={3}
+          />
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Quyền riêng tư</InputLabel>
+            <Select
+              value={newGroup.privacy}
+              onChange={(e) => setNewGroup({ ...newGroup, privacy: e.target.value })}
+              label="Quyền riêng tư"
+            >
+              <MenuItem value="PUBLIC">Công khai</MenuItem>
+              <MenuItem value="PRIVATE">Riêng tư</MenuItem>
+              <MenuItem value="CLOSED">Đóng</MenuItem>
+            </Select>
+          </FormControl>
+          
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="subtitle2" fontWeight={600} mb={1}>
+              Cài đặt
+            </Typography>
+            <Stack spacing={1}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={newGroup.requiresApproval}
+                    onChange={(e) => setNewGroup({ ...newGroup, requiresApproval: e.target.checked })}
+                  />
+                }
+                label="Yêu cầu phê duyệt tham gia"
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={newGroup.allowPosting}
+                    onChange={(e) => setNewGroup({ ...newGroup, allowPosting: e.target.checked })}
+                  />
+                }
+                label="Cho phép đăng bài"
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={newGroup.onlyAdminCanPost}
+                    onChange={(e) => setNewGroup({ ...newGroup, onlyAdminCanPost: e.target.checked })}
+                    disabled={!newGroup.allowPosting}
+                  />
+                }
+                label="Chỉ admin/moderator được đăng bài"
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={newGroup.moderationRequired}
+                    onChange={(e) => setNewGroup({ ...newGroup, moderationRequired: e.target.checked })}
+                    disabled={!newGroup.allowPosting}
+                  />
+                }
+                label="Cần kiểm duyệt bài đăng"
+              />
+            </Stack>
+          </Box>
         </DialogContent>
-        <DialogActions sx={{ p: { xs: 2, sm: 3 }, pt: { xs: 1.5, sm: 0 }, gap: { xs: 1, sm: 0 }, flexDirection: { xs: "column-reverse", sm: "row" } }}>
-          <Button
-            fullWidth={{ xs: true, sm: false }}
-            onClick={() => setCreateDialogOpen(false)}
-            sx={{
-              textTransform: "none",
-              fontWeight: 600,
-              borderRadius: { xs: 2, sm: 3 },
-              px: { xs: 2, sm: 3 },
-              py: { xs: 1, sm: 0.75 },
-              fontSize: { xs: 14, sm: 15 },
-            }}
-          >
-            Hủy
-          </Button>
-          <Button
-            fullWidth={{ xs: true, sm: false }}
-            onClick={handleCreateGroup}
-            variant="contained"
-            sx={{
-              textTransform: "none",
-              fontWeight: 600,
-              borderRadius: { xs: 2, sm: 3 },
-              px: { xs: 2, sm: 3 },
-              py: { xs: 1, sm: 0.75 },
-              fontSize: { xs: 14, sm: 15 },
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              "&:hover": {
-                background: "linear-gradient(135deg, #5568d3 0%, #63428a 100%)",
-              },
-            }}
-          >
-            Tạo nhóm
+        <DialogActions>
+          <Button onClick={() => setCreateDialogOpen(false)}>Hủy</Button>
+          <Button onClick={handleCreateGroup} variant="contained" disabled={creating}>
+            {creating ? "Đang tạo..." : "Tạo nhóm"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -946,17 +770,11 @@ export default function GroupPage() {
       {/* Snackbar */}
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={4000}
+        autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        sx={{ mt: { xs: "56px", sm: "64px" }, mx: { xs: 1, sm: 0 } }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          variant="filled"
-          sx={{ width: "100%", borderRadius: { xs: 2, sm: 3 }, boxShadow: 3, fontWeight: 500, fontSize: { xs: 13, sm: 14 } }}
-        >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
           {snackbar.message}
         </Alert>
       </Snackbar>

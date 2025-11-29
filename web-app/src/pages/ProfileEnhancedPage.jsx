@@ -47,10 +47,27 @@ import {
 import { isAuthenticated, logOut } from "../services/identityService";
 import { useUser } from "../contexts/UserContext";
 import { getMyPosts, getUserPosts, updatePost, deletePost } from "../services/postService";
+import { sharePost } from "../services/postInteractionService";
+import {
+  getSocialInfo,
+  addFriend,
+  removeFriend,
+  followUser,
+  unfollowUser,
+  getAllFriends,
+  blockUser,
+} from "../services/friendService";
+import { extractArrayFromResponse } from "../utils/apiHelper";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
+import CheckIcon from "@mui/icons-material/Check";
+import PeopleIcon from "@mui/icons-material/People";
+import PersonIcon from "@mui/icons-material/Person";
 import { getApiUrl, API_ENDPOINTS } from "../config/apiConfig";
 import { getToken } from "../services/localStorageService";
 import Post from "../components/Post";
 import PageLayout from "./PageLayout";
+import CreatePostButton from "../components/CreatePostButton";
 
 export default function ProfileEnhancedPage() {
   const navigate = useNavigate();
@@ -69,8 +86,14 @@ export default function ProfileEnhancedPage() {
   const [postsLoading, setPostsLoading] = useState(false);
   const [postsPage, setPostsPage] = useState(1);
   const [postsTotalPages, setPostsTotalPages] = useState(0);
+  const [postsInitialized, setPostsInitialized] = useState(false);
   // Local state for editing profile
   const [editProfileData, setEditProfileData] = useState(null);
+  // Social relationship state
+  const [socialInfo, setSocialInfo] = useState(null);
+  const [friendsList, setFriendsList] = useState([]);
+  const [loadingFriends, setLoadingFriends] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
   const avatarInputRef = useRef(null);
   const coverInputRef = useRef(null);
   const lastPostElementRef = useRef(null);
@@ -116,13 +139,30 @@ export default function ProfileEnhancedPage() {
 
     const loadProfile = async () => {
       setLoadingProfile(true);
+      setUserDetails(null);
+      
       try {
         if (profileUserId) {
-          // Load profile of the user specified in route
-          console.log('Loading profile for userId:', profileUserId);
-          const response = await getUserProfileById(profileUserId, false); // Don't suppress 404 for specific user
+          const targetUserId = String(profileUserId).trim();
           
-          // Parse response - handle different response formats
+          if (!targetUserId || targetUserId === 'undefined' || targetUserId === 'null') {
+            console.error('Invalid profileUserId:', profileUserId);
+            setSnackbar({ open: true, message: "ID người dùng không hợp lệ", severity: "error" });
+            setLoadingProfile(false);
+            return;
+          }
+          
+          console.log('Loading profile for userId:', targetUserId);
+          const response = await getUserProfileById(targetUserId, false);
+          
+          if (!response || response.status === 404 || response.data === null) {
+            console.warn('Profile not found for userId:', targetUserId);
+            setSnackbar({ open: true, message: "Không tìm thấy người dùng này", severity: "error" });
+            setUserDetails(null);
+            setLoadingProfile(false);
+            return;
+          }
+          
           let profileData = null;
           if (response?.data) {
             profileData = response.data.result || response.data.data || response.data;
@@ -132,11 +172,12 @@ export default function ProfileEnhancedPage() {
             profileData = response;
           }
           
-          if (profileData && typeof profileData === 'object') {
-            console.log('Profile loaded:', profileData.id || profileData.userId, profileData.username);
+          if (profileData && typeof profileData === 'object' && Object.keys(profileData).length > 0) {
+            console.log('Profile loaded successfully:', profileData.id || profileData.userId, profileData.username);
             setUserDetails(profileData);
           } else {
             console.warn('Profile data not found or invalid format');
+            setSnackbar({ open: true, message: "Không thể tải thông tin người dùng", severity: "error" });
             setUserDetails(null);
           }
         } else {
@@ -203,9 +244,17 @@ export default function ProfileEnhancedPage() {
         }
       } catch (error) {
         console.error("Error loading profile:", error);
-        console.error("Error details:", error?.response?.data || error?.message);
+        const errorData = error?.response?.data || {};
+        const errorMessage = errorData.message || errorData.error || error?.message || "Không thể tải thông tin người dùng";
         
-        // If loading own profile fails, try to use currentUser from context
+        if (error?.response?.status === 404) {
+          setSnackbar({ open: true, message: "Không tìm thấy người dùng này", severity: "error" });
+        } else if (error?.response?.status === 403) {
+          setSnackbar({ open: true, message: "Bạn không có quyền xem trang này", severity: "error" });
+        } else {
+          setSnackbar({ open: true, message: errorMessage, severity: "error" });
+        }
+        
         if (!profileUserId && currentUser) {
           console.log('Using currentUser from context as fallback');
           setUserDetails(currentUser);
@@ -218,7 +267,60 @@ export default function ProfileEnhancedPage() {
     };
 
     loadProfile();
-  }, [profileUserId, navigate, currentUser]);
+  }, [profileUserId, navigate, currentUser, loadUser]);
+
+  // Load social info and friends when profile is loaded
+  useEffect(() => {
+    const isOwnProfile = !profileUserId || (currentUser && (String(profileUserId) === String(currentUser.id) || String(profileUserId) === String(currentUser.userId)));
+    if (userDetails && profileUserId && !isOwnProfile) {
+      loadSocialInfo();
+      loadFriends();
+    }
+  }, [userDetails, profileUserId, currentUser]);
+
+  const loadSocialInfo = async () => {
+    if (!profileUserId) return;
+    try {
+      const response = await getSocialInfo(profileUserId);
+      console.log('Social info response:', response);
+      const info = response?.data?.result || response?.data;
+      console.log('Parsed social info:', info);
+      setSocialInfo(info);
+    } catch (error) {
+      console.error('Error loading social info:', error);
+      console.error('Error details:', error.response);
+      // Set default values if error
+      setSocialInfo({
+        isFriend: false,
+        isFollowing: false,
+        hasSentFriendRequest: false,
+        hasReceivedFriendRequest: false,
+      });
+    }
+  };
+
+  const loadFriends = async () => {
+    if (!profileUserId) return;
+    setLoadingFriends(true);
+    try {
+      // Try to get friends of the profile user
+      const response = await getAllFriends(profileUserId, 1, 9); // Load 9 friends for grid
+      const { items } = extractArrayFromResponse(response.data);
+      setFriendsList(items || []);
+    } catch (error) {
+      console.error('Error loading friends:', error);
+      // If error, try without userId (current user's friends)
+      try {
+        const response = await getAllFriends(null, 1, 9);
+        const { items } = extractArrayFromResponse(response.data);
+        setFriendsList(items || []);
+      } catch (err) {
+        setFriendsList([]);
+      }
+    } finally {
+      setLoadingFriends(false);
+    }
+  };
 
   const handleAvatarClick = () => avatarInputRef.current?.click();
   const handleCoverClick = () => coverInputRef.current?.click();
@@ -358,24 +460,35 @@ export default function ProfileEnhancedPage() {
   };
 
   const loadMyPosts = useCallback(async (page = 1) => {
-    // Prevent loading if already loading or no userDetails
-    if (postsLoading || !userDetails?.id) {
+    if (postsLoading) {
       return;
     }
     
     setPostsLoading(true);
     try {
-      // Determine which userId to use for loading posts
-      const targetUserId = userDetails.id;
-      const isCurrentUser = currentUser && targetUserId && currentUser.id && String(targetUserId) === String(currentUser.id);
+      let targetUserId = null;
+      let isCurrentUser = false;
+      
+      if (profileUserId) {
+        targetUserId = String(profileUserId).trim();
+        const currentUserId = currentUser?.id || currentUser?.userId;
+        isCurrentUser = currentUserId && String(targetUserId) === String(currentUserId);
+      } else {
+        targetUserId = currentUser?.id || currentUser?.userId;
+        isCurrentUser = true;
+      }
+      
+      if (!targetUserId) {
+        console.warn('No targetUserId available for loading posts');
+        setPostsLoading(false);
+        return;
+      }
       
       console.log('Loading posts - profileUserId:', profileUserId, 'targetUserId:', targetUserId, 'isCurrentUser:', isCurrentUser);
       
-      // Always use getUserPosts when viewing another user's profile (when profileUserId exists and different from current user)
-      // Only use getMyPosts when viewing own profile (no profileUserId or profileUserId === currentUser.id)
-      const response = (profileUserId && profileUserId !== currentUser?.id)
-        ? await getUserPosts(targetUserId, page, 10)
-        : await getMyPosts(page, 10);
+      const response = isCurrentUser
+        ? await getMyPosts(page, 10)
+        : await getUserPosts(targetUserId, page, 10);
       
       console.log('Posts response:', response?.data?.result?.data?.length || 0, 'posts');
       
@@ -445,7 +558,7 @@ export default function ProfileEnhancedPage() {
           
           return {
             id: post.id,
-            avatar: post.userAvatar || userAvatar || post.avatar || null, // Use userAvatar from post response first
+            avatar: post.userAvatar || userAvatar || post.avatar || null,
             username: post.username || targetUser?.username || 'Unknown',
             firstName: targetUser?.firstName || post.firstName || '',
             lastName: targetUser?.lastName || post.lastName || '',
@@ -453,8 +566,11 @@ export default function ProfileEnhancedPage() {
             created: created,
             content: post.content || '',
             media: media,
-            userId: postUserId, // Use the extracted userId from above
+            userId: postUserId,
             privacy: post.privacy || 'PUBLIC',
+            likeCount: post.likeCount || 0,
+            commentCount: post.commentCount || 0,
+            isLiked: post.isLiked || false,
             ...post,
           };
         });
@@ -473,61 +589,59 @@ export default function ProfileEnhancedPage() {
         if (mappedPosts.length > 0) {
           setPostsPage(page);
         }
+        setPostsInitialized(true);
       } else if (page === 1) {
         setPosts([]);
         setPostsPage(1);
+        setPostsTotalPages(0);
+        setPostsInitialized(true);
       } else {
         // No more posts, update total pages to prevent further loading
         if (postsTotalPages > page - 1) {
           setPostsTotalPages(page - 1);
         }
+        setPostsInitialized(true);
       }
     } catch (error) {
       console.error('Error loading posts:', error);
       setSnackbar({ open: true, message: "Không thể tải bài viết. Vui lòng thử lại.", severity: "error" });
+      // Mark as initialized to prevent continuous loading on error
+      if (page === 1) {
+        setPostsInitialized(true);
+        setPostsTotalPages(0);
+      }
     } finally {
       setPostsLoading(false);
     }
-  }, [userDetails, profileUserId, currentUser, postsLoading]);
+  }, [profileUserId, currentUser, postsLoading]);
 
-  // Load posts on mount - reset when userDetails or profileUserId changes
-  const hasLoadedPosts = useRef(false);
   const lastProfileUserIdRef = useRef(null);
   
   useEffect(() => {
-    // Reset when viewing different user (profileUserId changed)
+    const targetUserId = profileUserId || userDetails?.id;
+    
+    if (!targetUserId) {
+      return;
+    }
+    
     if (profileUserId !== lastProfileUserIdRef.current) {
       lastProfileUserIdRef.current = profileUserId;
-      hasLoadedPosts.current = false;
       setPosts([]);
       setPostsPage(1);
       setPostsTotalPages(0);
+      setPostsInitialized(false);
     }
     
-    // Also reset when userDetails.id changes
-    if (userDetails?.id) {
-      const currentProfileId = profileUserId || userDetails.id;
-      if (currentProfileId !== lastProfileUserIdRef.current) {
-        hasLoadedPosts.current = false;
-        setPosts([]);
-        setPostsPage(1);
-        setPostsTotalPages(0);
-      }
-    }
-  }, [userDetails?.id, profileUserId]);
-  
-  useEffect(() => {
-    if (!hasLoadedPosts.current && posts.length === 0 && !postsLoading && userDetails?.id) {
-      hasLoadedPosts.current = true;
-      setPostsPage(1);
+    // Only load if not loading, not initialized, and no posts
+    if (!postsLoading && !postsInitialized && posts.length === 0) {
       loadMyPosts(1);
     }
-  }, [userDetails?.id, posts.length, postsLoading, loadMyPosts]);
+  }, [profileUserId, userDetails?.id, postsLoading, posts.length, postsInitialized, loadMyPosts]);
 
   // Infinite scroll for posts
   useEffect(() => {
-    // Disconnect if loading or no more pages
-    if (postsLoading || postsPage >= postsTotalPages || postsTotalPages === 0 || posts.length === 0) {
+    // Disconnect if loading, no more pages, or no posts
+    if (postsLoading || postsPage >= postsTotalPages || postsTotalPages === 0 || posts.length === 0 || !postsInitialized) {
       if (postsObserver.current) {
         postsObserver.current.disconnect();
       }
@@ -541,7 +655,7 @@ export default function ProfileEnhancedPage() {
 
     // Create new observer with proper configuration
     postsObserver.current = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && !postsLoading && postsPage < postsTotalPages) {
+      if (entries[0].isIntersecting && !postsLoading && postsPage < postsTotalPages && postsInitialized) {
         const nextPage = postsPage + 1;
         setPostsPage(nextPage);
         loadMyPosts(nextPage);
@@ -562,7 +676,7 @@ export default function ProfileEnhancedPage() {
         postsObserver.current.disconnect();
       }
     };
-  }, [posts.length, postsLoading, postsPage, postsTotalPages]); // Removed loadMyPosts to prevent infinite loop
+  }, [posts.length, postsLoading, postsPage, postsTotalPages, postsInitialized, loadMyPosts]);
 
   const handleSaveAbout = async () => {
     if (!editProfileData) return;
@@ -652,6 +766,128 @@ export default function ProfileEnhancedPage() {
     setMenuAnchor(null);
   };
 
+  // Social action handlers
+  const handleAddFriend = async () => {
+    if (!profileUserId) return;
+    setActionLoading(true);
+    try {
+      console.log('Adding friend:', profileUserId);
+      const response = await addFriend(profileUserId);
+      console.log('Add friend response:', response);
+      setSnackbar({ open: true, message: "Đã gửi lời mời kết bạn!", severity: "success" });
+      // Reload social info after a short delay to ensure backend has processed
+      setTimeout(async () => {
+        await loadSocialInfo();
+      }, 500);
+    } catch (error) {
+      console.error('Error adding friend:', error);
+      console.error('Error response:', error.response);
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || "Không thể gửi lời mời";
+      setSnackbar({ open: true, message: errorMessage, severity: "error" });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleUnfriend = async () => {
+    if (!profileUserId) return;
+    setActionLoading(true);
+    try {
+      await removeFriend(profileUserId);
+      setSnackbar({ open: true, message: "Đã hủy kết bạn!", severity: "warning" });
+      await loadSocialInfo();
+      await loadFriends();
+    } catch (error) {
+      setSnackbar({ open: true, message: error.response?.data?.message || "Không thể hủy kết bạn", severity: "error" });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleFollow = async () => {
+    if (!profileUserId) return;
+    setActionLoading(true);
+    try {
+      console.log('Following user:', profileUserId);
+      const response = await followUser(profileUserId);
+      console.log('Follow response:', response);
+      setSnackbar({ open: true, message: "Đã theo dõi!", severity: "success" });
+      // Reload social info after a short delay to ensure backend has processed
+      setTimeout(async () => {
+        await loadSocialInfo();
+      }, 500);
+    } catch (error) {
+      console.error('Error following user:', error);
+      console.error('Error response:', error.response);
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || "Không thể theo dõi";
+      setSnackbar({ open: true, message: errorMessage, severity: "error" });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleUnfollow = async () => {
+    if (!profileUserId) return;
+    setActionLoading(true);
+    try {
+      await unfollowUser(profileUserId);
+      setSnackbar({ open: true, message: "Đã hủy theo dõi!", severity: "info" });
+      await loadSocialInfo();
+    } catch (error) {
+      setSnackbar({ open: true, message: error.response?.data?.message || "Không thể hủy theo dõi", severity: "error" });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleAcceptFriend = async () => {
+    if (!profileUserId) return;
+    setActionLoading(true);
+    try {
+      const { acceptFriendRequest } = await import("../services/friendService");
+      await acceptFriendRequest(profileUserId);
+      setSnackbar({ open: true, message: "Đã chấp nhận lời mời kết bạn!", severity: "success" });
+      await loadSocialInfo();
+      await loadFriends();
+    } catch (error) {
+      setSnackbar({ open: true, message: error.response?.data?.message || "Không thể chấp nhận", severity: "error" });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeclineFriend = async () => {
+    if (!profileUserId) return;
+    setActionLoading(true);
+    try {
+      const { declineFriendRequest } = await import("../services/friendService");
+      await declineFriendRequest(profileUserId);
+      setSnackbar({ open: true, message: "Đã từ chối lời mời!", severity: "info" });
+      await loadSocialInfo();
+    } catch (error) {
+      setSnackbar({ open: true, message: error.response?.data?.message || "Không thể từ chối", severity: "error" });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleCancelFriendRequest = async () => {
+    if (!profileUserId) return;
+    setActionLoading(true);
+    try {
+      const { cancelFriendRequest } = await import("../services/friendService");
+      await cancelFriendRequest(profileUserId);
+      setSnackbar({ open: true, message: "Đã hủy lời mời kết bạn!", severity: "info" });
+      await loadSocialInfo();
+    } catch (error) {
+      console.error('Error canceling friend request:', error);
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || "Không thể hủy lời mời";
+      setSnackbar({ open: true, message: errorMessage, severity: "error" });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const getBioPreview = (bio) => {
     const lines = bio.split('\n');
     if (lines.length <= 2 && bio.length <= 120) return bio;
@@ -675,7 +911,16 @@ export default function ProfileEnhancedPage() {
     );
   }
 
-  const isOwnProfile = !profileUserId || (currentUser && profileUserId === currentUser.id);
+  const isOwnProfile = !profileUserId || (currentUser && (String(profileUserId) === String(currentUser.id) || String(profileUserId) === String(currentUser.userId)));
+
+  const handlePostCreated = (formattedPost) => {
+    setPosts((prev) => {
+      const exists = prev.some(p => p.id === formattedPost.id);
+      if (exists) return prev;
+      return [formattedPost, ...prev];
+    });
+    setSnackbar({ open: true, message: "Đã tạo bài viết thành công!", severity: "success" });
+  };
 
   return (
     <PageLayout>
@@ -935,6 +1180,266 @@ export default function ProfileEnhancedPage() {
               >
                 @{userDetails?.username || userDetails?.email || "user"}
               </Typography>
+
+              {/* Action Buttons - Only show if not own profile */}
+              {!isOwnProfile && (
+                <Stack 
+                  direction="row" 
+                  spacing={1.5} 
+                  sx={{ 
+                    mb: 2.5,
+                    justifyContent: { xs: "center", md: "flex-start" },
+                    flexWrap: "wrap",
+                  }}
+                >
+                  {(() => {
+                    // Debug log
+                    console.log('Social info:', socialInfo);
+                    const isFriend = socialInfo?.isFriend || socialInfo?.friend || false;
+                    const isFollowing = socialInfo?.isFollowing || socialInfo?.following || false;
+                    const hasSentRequest = socialInfo?.hasSentFriendRequest || socialInfo?.sentRequest || false;
+                    const hasReceivedRequest = socialInfo?.hasReceivedFriendRequest || socialInfo?.receivedRequest || false;
+                    console.log('Relationship status:', { isFriend, isFollowing, hasSentRequest, hasReceivedRequest });
+
+                    if (isFriend) {
+                      return (
+                        <>
+                          <Chip
+                            icon={<PeopleIcon />}
+                            label="Bạn bè"
+                            color="success"
+                            sx={{
+                              height: 40,
+                              px: 2,
+                              fontWeight: 600,
+                              fontSize: 14,
+                              "& .MuiChip-icon": {
+                                color: "success.main",
+                              },
+                            }}
+                          />
+                          <Button
+                            variant="outlined"
+                            startIcon={<PersonRemoveIcon />}
+                            onClick={handleUnfriend}
+                            disabled={actionLoading}
+                            sx={{
+                              textTransform: "none",
+                              fontWeight: 600,
+                              borderRadius: 2.5,
+                              px: 3,
+                              py: 1.2,
+                              borderColor: "divider",
+                              "&:hover": {
+                                borderColor: "error.main",
+                                color: "error.main",
+                                bgcolor: "rgba(211, 47, 47, 0.04)",
+                              },
+                            }}
+                          >
+                            Hủy kết bạn
+                          </Button>
+                          {!isFollowing && (
+                            <Button
+                              variant="outlined"
+                              startIcon={<PersonAddIcon />}
+                              onClick={handleFollow}
+                              disabled={actionLoading}
+                              sx={{
+                                textTransform: "none",
+                                fontWeight: 600,
+                                borderRadius: 2.5,
+                                px: 3,
+                                py: 1.2,
+                                borderColor: "divider",
+                                "&:hover": {
+                                  borderColor: "primary.main",
+                                  bgcolor: "rgba(102, 126, 234, 0.04)",
+                                },
+                              }}
+                            >
+                              Theo dõi
+                            </Button>
+                          )}
+                          {isFollowing && (
+                            <Button
+                              variant="outlined"
+                              onClick={handleUnfollow}
+                              disabled={actionLoading}
+                              sx={{
+                                textTransform: "none",
+                                fontWeight: 600,
+                                borderRadius: 2.5,
+                                px: 3,
+                                py: 1.2,
+                                borderColor: "divider",
+                                "&:hover": {
+                                  borderColor: "error.main",
+                                  color: "error.main",
+                                  bgcolor: "rgba(211, 47, 47, 0.04)",
+                                },
+                              }}
+                            >
+                              Đang theo dõi
+                            </Button>
+                          )}
+                        </>
+                      );
+                    } else if (hasReceivedRequest) {
+                      return (
+                        <>
+                          <Button
+                            variant="contained"
+                            startIcon={<CheckIcon />}
+                            onClick={handleAcceptFriend}
+                            disabled={actionLoading}
+                            sx={{
+                              textTransform: "none",
+                              fontWeight: 600,
+                              borderRadius: 2.5,
+                              px: 3,
+                              py: 1.2,
+                              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                              "&:hover": {
+                                background: "linear-gradient(135deg, #5568d3 0%, #63428a 100%)",
+                              },
+                            }}
+                          >
+                            Xác nhận
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            onClick={handleDeclineFriend}
+                            disabled={actionLoading}
+                            sx={{
+                              textTransform: "none",
+                              fontWeight: 600,
+                              borderRadius: 2.5,
+                              px: 3,
+                              py: 1.2,
+                              borderColor: "divider",
+                              "&:hover": {
+                                borderColor: "error.main",
+                                color: "error.main",
+                                bgcolor: "rgba(211, 47, 47, 0.04)",
+                              },
+                            }}
+                          >
+                            Xóa
+                          </Button>
+                        </>
+                      );
+                    } else if (hasSentRequest) {
+                      return (
+                        <>
+                          <Chip
+                            icon={<PersonAddIcon />}
+                            label="Đã gửi lời mời kết bạn"
+                            color="warning"
+                            sx={{
+                              height: 40,
+                              px: 2,
+                              fontWeight: 600,
+                              fontSize: 14,
+                              "& .MuiChip-icon": {
+                                color: "warning.main",
+                              },
+                            }}
+                          />
+                          <Button
+                            variant="outlined"
+                            onClick={handleCancelFriendRequest}
+                            disabled={actionLoading}
+                            sx={{
+                              textTransform: "none",
+                              fontWeight: 600,
+                              borderRadius: 2.5,
+                              px: 3,
+                              py: 1.2,
+                              borderColor: "divider",
+                              "&:hover": {
+                                borderColor: "error.main",
+                                color: "error.main",
+                                bgcolor: "rgba(211, 47, 47, 0.04)",
+                              },
+                            }}
+                          >
+                            Hủy lời mời
+                          </Button>
+                        </>
+                      );
+                    } else {
+                      return (
+                        <>
+                          <Button
+                            variant="contained"
+                            startIcon={<PersonAddIcon />}
+                            onClick={handleAddFriend}
+                            disabled={actionLoading}
+                            sx={{
+                              textTransform: "none",
+                              fontWeight: 600,
+                              borderRadius: 2.5,
+                              px: 3,
+                              py: 1.2,
+                              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                              "&:hover": {
+                                background: "linear-gradient(135deg, #5568d3 0%, #63428a 100%)",
+                              },
+                            }}
+                          >
+                            Kết bạn
+                          </Button>
+                          {!isFollowing && (
+                            <Button
+                              variant="outlined"
+                              startIcon={<PersonAddIcon />}
+                              onClick={handleFollow}
+                              disabled={actionLoading}
+                              sx={{
+                                textTransform: "none",
+                                fontWeight: 600,
+                                borderRadius: 2.5,
+                                px: 3,
+                                py: 1.2,
+                                borderColor: "divider",
+                                "&:hover": {
+                                  borderColor: "primary.main",
+                                  bgcolor: "rgba(102, 126, 234, 0.04)",
+                                },
+                              }}
+                            >
+                              Theo dõi
+                            </Button>
+                          )}
+                          {isFollowing && (
+                            <Button
+                              variant="outlined"
+                              onClick={handleUnfollow}
+                              disabled={actionLoading}
+                              sx={{
+                                textTransform: "none",
+                                fontWeight: 600,
+                                borderRadius: 2.5,
+                                px: 3,
+                                py: 1.2,
+                                borderColor: "divider",
+                                "&:hover": {
+                                  borderColor: "error.main",
+                                  color: "error.main",
+                                  bgcolor: "rgba(211, 47, 47, 0.04)",
+                                },
+                              }}
+                            >
+                              Đang theo dõi
+                            </Button>
+                          )}
+                        </>
+                      );
+                    }
+                  })()}
+                </Stack>
+              )}
               
               {/* Email if different from username */}
               {userDetails?.email && userDetails?.email !== userDetails?.username && (
@@ -1662,6 +2167,123 @@ export default function ProfileEnhancedPage() {
                           </Box>
                         </Box>
                       )}
+
+                      {/* Friends Section */}
+                      <Box sx={{ mt: 3 }}>
+                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                          <Typography 
+                            variant="h6" 
+                            sx={{ 
+                              fontWeight: 800, 
+                              fontSize: { xs: 18, sm: 20 },
+                              background: (t) => t.palette.mode === "dark"
+                                ? "linear-gradient(135deg, #8b9aff 0%, #9775d4 100%)"
+                                : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                              backgroundClip: "text",
+                              WebkitBackgroundClip: "text",
+                              WebkitTextFillColor: "transparent",
+                            }}
+                          >
+                            Bạn bè
+                          </Typography>
+                          {friendsList.length > 0 && (
+                            <Button
+                              size="small"
+                              onClick={() => navigate(`/friends`)}
+                              sx={{
+                                textTransform: "none",
+                                fontWeight: 600,
+                                fontSize: 13,
+                                color: "primary.main",
+                                "&:hover": { bgcolor: "transparent", textDecoration: "underline" },
+                              }}
+                            >
+                              Xem tất cả
+                            </Button>
+                          )}
+                        </Box>
+
+                        {loadingFriends ? (
+                          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+                            <CircularProgress size={32} />
+                          </Box>
+                        ) : friendsList.length === 0 ? (
+                          <Box
+                            sx={{
+                              p: 4,
+                              textAlign: "center",
+                              borderRadius: 3,
+                              bgcolor: (t) => alpha(t.palette.primary.main, 0.05),
+                              border: (t) => `1px solid ${alpha(t.palette.primary.main, 0.1)}`,
+                            }}
+                          >
+                            <PersonIcon sx={{ fontSize: 48, color: "text.disabled", mb: 1 }} />
+                            <Typography variant="body2" color="text.secondary">
+                              Chưa có bạn bè
+                            </Typography>
+                          </Box>
+                        ) : (
+                          <Grid container spacing={1.5}>
+                            {friendsList.slice(0, 9).map((friend) => {
+                              const friendId = friend.friendId || friend.id || friend.userId;
+                              const friendName = friend.firstName && friend.lastName
+                                ? `${friend.lastName} ${friend.firstName}`.trim()
+                                : friend.username || friend.name || "Người dùng";
+                              const friendAvatar = friend.avatar || friend.avatarUrl || null;
+                              
+                              return (
+                                <Grid item xs={4} key={friendId}>
+                                  <Box
+                                    onClick={() => navigate(`/profile/${friendId}`)}
+                                    sx={{
+                                      cursor: "pointer",
+                                      p: 1.5,
+                                      borderRadius: 2,
+                                      bgcolor: (t) => alpha(t.palette.primary.main, 0.05),
+                                      border: (t) => `1px solid ${alpha(t.palette.primary.main, 0.1)}`,
+                                      transition: "all 0.2s ease",
+                                      "&:hover": {
+                                        bgcolor: (t) => alpha(t.palette.primary.main, 0.1),
+                                        transform: "translateY(-2px)",
+                                        boxShadow: (t) => `0 4px 12px ${alpha(t.palette.primary.main, 0.2)}`,
+                                      },
+                                    }}
+                                  >
+                                    <Avatar
+                                      src={friendAvatar}
+                                      sx={{
+                                        width: "100%",
+                                        height: "auto",
+                                        aspectRatio: "1",
+                                        mb: 1,
+                                        bgcolor: (t) => t.palette.mode === "dark"
+                                          ? "linear-gradient(135deg, #8b9aff 0%, #9775d4 100%)"
+                                          : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                      }}
+                                    >
+                                      {friendName.charAt(0).toUpperCase()}
+                                    </Avatar>
+                                    <Typography
+                                      variant="caption"
+                                      sx={{
+                                        display: "block",
+                                        textAlign: "center",
+                                        fontWeight: 600,
+                                        fontSize: 11,
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        whiteSpace: "nowrap",
+                                      }}
+                                    >
+                                      {friendName}
+                                    </Typography>
+                                  </Box>
+                                </Grid>
+                              );
+                            })}
+                          </Grid>
+                        )}
+                      </Box>
                     </Stack>
                   )}
                 </Paper>
@@ -1828,6 +2450,7 @@ export default function ProfileEnhancedPage() {
                         <Post
                           ref={isLast ? lastPostElementRef : null}
                           post={post}
+                          currentUserId={currentUser?.id || currentUser?.userId}
                           onEdit={async (id, content) => {
                             try {
                               await updatePost(id, { content });
@@ -1846,6 +2469,54 @@ export default function ProfileEnhancedPage() {
                             } catch (error) {
                               console.error('Error deleting post:', error);
                               setSnackbar({ open: true, message: "Không thể xóa bài viết. Vui lòng thử lại.", severity: "error" });
+                            }
+                          }}
+                          onShare={(sharedPost) => {
+                            if (sharedPost) {
+                              const formatTimeAgo = (dateString) => {
+                                if (!dateString) return 'Vừa xong';
+                                const date = new Date(dateString);
+                                const now = new Date();
+                                const diffMs = now - date;
+                                const diffMins = Math.floor(diffMs / 60000);
+                                if (diffMins < 1) return 'Vừa xong';
+                                if (diffMins < 60) return `${diffMins} phút trước`;
+                                return date.toLocaleDateString('vi-VN');
+                              };
+                              
+                              const media = (sharedPost.imageUrls || []).map((url) => ({
+                                url: url,
+                                type: 'image',
+                                alt: `Post image ${sharedPost.id}`,
+                              }));
+                              
+                              const formattedPost = {
+                                id: sharedPost.id,
+                                avatar: currentUser?.avatar && currentUser.avatar.trim() !== '' ? currentUser.avatar : null,
+                                username: currentUser?.username || 'Unknown',
+                                firstName: currentUser?.firstName || '',
+                                lastName: currentUser?.lastName || '',
+                                displayName: currentUser?.lastName && currentUser?.firstName 
+                                  ? `${currentUser.lastName} ${currentUser.firstName}`.trim()
+                                  : currentUser?.firstName || currentUser?.lastName || currentUser?.username || 'Unknown',
+                                created: formatTimeAgo(sharedPost.createdDate || sharedPost.created),
+                                content: sharedPost.content || '',
+                                media: media,
+                                userId: currentUser?.id || currentUser?.userId,
+                                privacy: sharedPost.privacy || 'PUBLIC',
+                                likeCount: sharedPost.likeCount || 0,
+                                commentCount: sharedPost.commentCount || 0,
+                                isLiked: sharedPost.isLiked || false,
+                                ...sharedPost,
+                              };
+                              
+                              setPosts((prev) => {
+                                const exists = prev.some(p => p.id === formattedPost.id);
+                                if (exists) return prev;
+                                return [formattedPost, ...prev];
+                              });
+                              
+                              setSnackbar({ open: true, message: "Đã chia sẻ bài viết thành công!", severity: "success" });
                             }
                           }}
                         />
@@ -1976,6 +2647,15 @@ export default function ProfileEnhancedPage() {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      {isOwnProfile && (
+        <CreatePostButton 
+          user={currentUser} 
+          onPostCreated={handlePostCreated}
+          show={isOwnProfile}
+        />
+      )}
     </PageLayout>
   );
 }
+
