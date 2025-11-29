@@ -482,7 +482,7 @@ export default function GroupPage() {
           </Card>
 
           {loading ? (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+            <Box sx={{ display: "flex", justifyContent: "center", py: 4, }}>
               <CircularProgress />
             </Box>
           ) : (
@@ -490,7 +490,7 @@ export default function GroupPage() {
               {tabValue === 0 && (
                 <Box>
                   {filteredMyGroups.length === 0 ? (
-                    <Card sx={{ p: 3, textAlign: "center" }}>
+                    <Card sx={{ p: 3,ml: 2.5, textAlign: "center" }}>
                       <Typography variant="body1" color="text.secondary">
                         Bạn chưa tham gia nhóm nào
                       </Typography>
@@ -505,7 +505,7 @@ export default function GroupPage() {
                             <Card
                               sx={{
                                 p: 2,
-                                ml: 2.5,
+                                
                                 height: "100%",
                                 display: "flex",
                                 flexDirection: "column",
@@ -571,6 +571,7 @@ export default function GroupPage() {
                             <Card
                               sx={{
                                 p: 2,
+                                
                                 height: "100%",
                                 display: "flex",
                                 flexDirection: "column",
