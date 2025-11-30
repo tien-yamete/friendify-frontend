@@ -60,7 +60,7 @@ dayjs.locale('vi');
 export default function ChatWidget() {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
-  const { user: currentUser } = useUser();
+  const { user: currentUser, loading: userLoading } = useUser();
 
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
@@ -123,7 +123,7 @@ export default function ChatWidget() {
       const response = await getMessagesPaginated(conversationId, 1, 50);
       if (response?.data?.result) {
         const data = response.data.result;
-        const newMessages = Array.isArray(data.items) ? data.items : data.content || [];
+        const newMessages = data.data || data.items || data.content || [];
         setMessages(newMessages.reverse());
         setTimeout(scrollToBottom, 100);
       }
@@ -212,6 +212,12 @@ export default function ChatWidget() {
   };
 
   const handleCreateDirectChat = async (selectedUser) => {
+    console.log("Selected User:", selectedUser);
+    const targetId = selectedUser?.userId || selectedUser?.id;
+    if (!targetId) {
+        console.error("Không tìm thấy ID người dùng");
+        return;
+    }
     try {
       // Ensure userId is a string and not empty
       const userId = String(selectedUser.userId || selectedUser.id || '').trim();
@@ -224,14 +230,21 @@ export default function ChatWidget() {
       console.log('📤 Creating direct chat with userId:', userId);
       const response = await createConversation({
         typeConversation: 'DIRECT',
+<<<<<<< HEAD
         participantIds: [userId]
+=======
+        participantIds: [targetId]
+>>>>>>> 7c48312935a1470d0951a89b05716b7e3c0666ed
       });
       
       console.log('📥 Conversation response:', response);
       
       if (response?.data?.result) {
         const newConv = response.data.result;
-        setConversations(prev => [newConv, ...prev.slice(0, 4)]);
+        setConversations(prev => {
+            const filtered = prev.filter(c => c.id !== newConv.id); 
+            return [newConv, ...filtered].slice(0, 5); 
+        });
         await handleSelectConversation(newConv);
       } else {
         console.error('❌ No conversation data in response:', response);
@@ -255,7 +268,10 @@ export default function ChatWidget() {
       
       if (response?.data?.result) {
         const newConv = response.data.result;
-        setConversations(prev => [newConv, ...prev.slice(0, 4)]);
+        setConversations(prev => {
+            const filtered = prev.filter(c => c.id !== newConv.id);
+            return [newConv, ...filtered].slice(0, 5);
+        });
         setCreateGroupDialog(false);
         setGroupName('');
         setGroupParticipants([]);
@@ -298,10 +314,10 @@ export default function ChatWidget() {
 
   const getConversationDisplayName = (conversation) => {
     if (conversation.typeConversation === 'GROUP') {
-      return conversation.conversationName || 'Nhóm chat';
+      return conversation.conversationName || 'Nhóm chat không tên';
     }
     
-    if (conversation.participants && conversation.participants.length > 0) {
+    if (conversation.participants && currentUser) {
       const otherParticipant = conversation.participants.find(
         p => (p.userId || p.id) !== (currentUser?.id || currentUser?.userId)
       );
@@ -556,8 +572,12 @@ export default function ChatWidget() {
             </DialogTitle>
             <DialogContent sx={{ flex: 1, overflow: 'auto', p: 2 }}>
               {messages.map((message) => {
-                const isMe = message.me || 
-                  (message.sender?.userId || message.sender?.id) === (currentUser?.id || currentUser?.userId);
+                //  const isMe= message.me || 
+                //   (message.sender?.userId || message.sender?.id) === (currentUser?.id || currentUser?.userId);
+                const senderId = message.sender?.userId || message.sender?.id;
+                const myId = currentUser?.id || currentUser?.userId;
+                // const isMe = senderId === myId;
+                const isMe = String(senderId) === String(myId);
                 
                 return (
                   <Box

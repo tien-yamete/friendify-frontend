@@ -74,6 +74,7 @@ const CreateChatPopover = ({ anchorEl, open, onClose, onSelectUser, onCreateGrou
 
         const { items: usersList } = extractArrayFromResponse(response.data);
         
+<<<<<<< HEAD
         // Normalize user data - prioritize userId field from API
         const normalizedUsers = usersList.map(user => {
           // Get userId - prioritize userId field from API response
@@ -88,6 +89,17 @@ const CreateChatPopover = ({ anchorEl, open, onClose, onSelectUser, onCreateGrou
             email: user.email || null,
           };
         });
+=======
+        // Normalize user data
+        const normalizedUsers = usersList.map(user => ({
+          id: user.userId || user.id || user._id,
+          username: user.username || user.userName || '',
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          avatar: user.avatar || user.avatarUrl || null,
+          email: user.email || null,
+        }));
+>>>>>>> 7c48312935a1470d0951a89b05716b7e3c0666ed
 
         setSearchResults(normalizedUsers);
       } catch (err) {
